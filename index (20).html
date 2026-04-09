@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UMovies v67</title>
+<style>
+body { margin:0; font-family:Arial; background:#141414; color:white; }
+h2 { margin:20px; }
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 30px; background:#141414; position:sticky; top:0; z-index:10; }
+.nav-links button { background:none; border:none; color:white; margin:0 8px; cursor:pointer; }
+.nav-links button:hover, .nav-links button.active { color:#e50914; }
+#searchInput { padding:5px 10px; border-radius:4px; border:none; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo h2 {
+  margin: 0;
+}
+
+.logo img {
+  height: 32px;
+  border-radius: 5px;
+}
+
+.counter {
+  font-size: 12px;
+  color: #aaa;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.section { margin-bottom:40px; }
+.carousel { display:flex; overflow-x:auto; gap:10px; padding:0 20px; }
+.carousel::-webkit-scrollbar { display:none; }
+.carousel-item { position:relative; display:inline-block; cursor:pointer; }
+.carousel-item img { height:200px; width:130px; border-radius:5px; transition:0.3s; }
+.carousel-item img:hover { transform:scale(1.1); }
+.carousel-item span { position:absolute; bottom:5px; left:5px; font-size:12px; background:rgba(0,0,0,0.7); padding:2px 4px; border-radius:3px; }
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:20; }
+.modal-content { width:900px; max-width:95%; background:#111; border-radius:8px; display:flex; overflow:hidden; position:relative; }
+.modal-left { flex:1; padding:30px; display:flex; flex-direction:column; justify-content:center; }
+.modal-left h1 { font-size:32px; margin-bottom:10px; }
+.modal-left p { color:#ccc; white-space:pre-line; }
+.modal-right { width:320px; position:relative; }
+.modal-right img { width:100%; height:100%; object-fit:cover; }
+.modal-right::after { content:""; position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,0) 0%, #111 100%); }
+.modal-seasons { max-height:200px; overflow-y:auto; background:#222; padding:10px; border-radius:5px; margin-top:10px; }
+.modal-seasons div { padding:6px; cursor:pointer; }
+.modal-seasons div:hover { background:#e50914; }
+button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:pointer; }
+#playBtn { background:white; color:black; }
+#finishBtn, #nextEpBtn { background:#e50914; color:white; display:none; }
+#closeModal { position:absolute; top:10px; right:15px; font-size:30px; cursor:pointer; }
+/* Featured slideshow */
+.featured-container { position: relative; width:100%; height:500px; overflow:hidden; margin-bottom:30px; }
+.featured-slide { width:100%; height:100%; position:absolute; top:0; left:0; transition: opacity 1s ease; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:flex-end; padding:50px; box-sizing:border-box; color:white; }
+.featured-slide h1 { font-size:48px; margin:0; }
+.featured-slide p { margin:5px 0; font-size:18px; }
+.featured-slide button { margin-top:10px; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:16px; }
+.featured-slide button.play { background:white; color:black; }
+.featured-slide button.info { background:#e50914; color:white; }
+.featured-slide.hidden { opacity:0; pointer-events:none; }
+.featured-slide.visible { opacity:1; pointer-events:auto; }
+.featured-slide::after { content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 40%, rgba(20,20,20,0) 60%, rgba(20,20,20,1) 100%); z-index:1; }
+.featured-slide * { position:relative; z-index:2; }
+</style>
+
+</head>
+<body>
+<div class="navbar">
+  <div class="logo">
+    <img src="https://iili.io/B7PN5gI.png">
+    <h2>Version 5</h2>
+
+    <!-- 👇 COUNTER + BATTERY -->
+    <div class="counter">
+      <h2>Visits:</h2> 
+      <span id="totalViews">0</span> total •
+      <span id="todayViews">0</span> today •
+      <h2>Battery:</h2>
+      🔋 <span id="batteryLevel">Loading...</span>
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <button data-section="movies">Movies</button>
+    <button data-section="tv">TV Shows</button>
+    <button id="siteBtn">Go to Site</button>
+  </div>  
+
+  <input id="searchInput" placeholder="Search">
+</div>
+
+<div id="sections"></div>
+
+<div id="movieModal" class="modal">
+  <span id="closeModal">&times;</span>
+  <div class="modal-content">
+    <div class="modal-left">
+      <h1 id="modalTitle"></h1>
+      <p id="modalMeta"></p>
+      <p id="modalDesc"></p>
+      <button id="playBtn">▶ Play</button>
+      <button id="finishBtn">Finished Movie</button>
+      <button id="nextEpBtn">Next Episode</button>
+      <div id="modalSeasons" class="modal-seasons"></div>
+    </div>
+    <div class="modal-right">
+      <img id="modalPoster">
+    </div>
+  </div>
+</div>
+
+<script>
+  // -------- OPTION 2 BUTTON (JS) --------
+  document.getElementById("siteBtn").addEventListener("click", () => {
+    window.open("https://youtube.com", "_blank");
+  });
+
+  // -------- BATTERY API --------
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(battery => {
+      function updateBattery() {
+        let percent = Math.round(battery.level * 100);
+        document.getElementById("batteryLevel").textContent = percent + "%";
+      }
+
+      updateBattery();
+      battery.addEventListener("levelchange", updateBattery);
+    });
+  } else {
+    document.getElementById("batteryLevel").textContent = "Not supported";
+  }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const movies = [
+        {title: "Avengers Endgame", year: 2019, tags: "Action, Adventure, Superhero", section: "movies", description: "The Avengers assemble for a final stand against Thanos to save the universe.", poster: "https://resizing.flixster.com/fC7nU6iTRQk02tS0SDS1ylx-G34=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2QxZjE5ZDgzLTRiY2MtNDFkYS04NWQ4LTRkYzc1ZTAwNWE2NC53ZWJw", url: "https://drive.google.com/file/d/1ehi9tidOYHb1RMldxtBw6-L3UhyEKVm9/view"},
+        {title: "Ant-Man and The Wasp: Quantumania", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "Scott Lang and Hope Van Dyne explore the Quantum Realm while facing Kang the Conqueror.", poster: "https://resizing.flixster.com/_0Mhf0W_vdhwlaqOaUDX6JiReKA=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzE0OGY2MTIxLTE1MDEtNDI5YS1hYzVlLWYyMzExYjBmZTlhMC5qcGc=", url: "https://drive.google.com/file/d/1AW3Zm8256tzZ-37lmgYmIGse4knu8IdA/view"},
+        {title: "Avengers Infinity War", year: 2018, tags: "Action, Adventure, Superhero", section: "movies", description: "The Avengers try to stop Thanos from collecting all Infinity Stones and destroying half the universe.", poster: "https://resizing.flixster.com/CXOXbOpLNL1NNkXTQu-4Rgvcszs=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzM0NGRkMDM2LWVjNDQtNGZlMC04NGM3LWZkMzQ2Njg1OTUyNi53ZWJw", url: "https://drive.google.com/file/d/1oKDbw6zCdSRKRbABn6nKf_4LGsA3ftwL/view"},
+        {title: "A Goofy Movie", year: 1995, tags: "Animation, Comedy, Family", section: "movies", description: "Goofy takes Max on a cross-country trip full of mishaps and father-son bonding.", poster: "https://assets.newsweek.com/wp-content/uploads/2025/08/1814494-goofy-movie.png?w=1600&quality=80&webp=1", url: "https://drive.google.com/file/d/1ify_EMaQW-ZAn2F0STztn2AGU-jE7aHL/view"},
+        {title: "An Extremely Goofy Movie", year: 2000, tags: "Animation, Comedy, Family", section: "movies", description: "Max goes to college while Goofy joins him for adventures on campus.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p24202_p_v8_ag.jpg", url: "https://drive.google.com/file/d/1e4NzmeC84qest_9Wzmtvmi80brGPYnsN/view?usp=sharing"},
+        {title: "Alvin and the Chipmunks", year: 2007, tags: "Animation, Comedy, Family", section: "movies", description: "The Chipmunks are discovered by a struggling songwriter and rise to fame.", poster: "https://resizing.flixster.com/8bZg1PEnUGtSNNOpOoC9GDgPwPM=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12446645_p_v10_aa.jpg", url: "https://drive.google.com/file/d/1uCRRJZj1GAaweX996uHbF2zxPoessmGW/view?usp=share_link"},
+        {title: "Alvin and the Chipmunks: The Squeakquel", year: 2009, tags: "Animation, Comedy, Family", section: "movies", description: "The Chipmunks return for new adventures and a music competition.", poster: "https://resizing.flixster.com/qWZHswstJFXz7rv7MqYhw8jCnVw=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p3577269_p_v8_af.jpg", url: "https://drive.google.com/file/d/1em55qHTtdrWD4Dox9CXs9r1042TLu_cu/view?usp=share_link"},
+        {title: "Alvin and the Chipmunks: Chipwrecked", year: 2011, tags: "Animation, Comedy, Family", section: "movies", description: "The Chipmunks end up stranded on a deserted island after a cruise accident.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8718307_p_v10_aa.jpg", url: "https://drive.google.com/file/d/1LTKy48IbusfXsl5nSNDTd0M3A8B3aPke/view?usp=share_link"},
+        {title: "Alvin and the Chipmunks: Road Chip", year: 2015, tags: "Animation, Comedy, Family", section: "movies", description: "The Chipmunks try to stop Dave from proposing to his girlfriend in Miami.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p11823578_p_v10_ac.jpg", url: "https://drive.google.com/file/d/1ljX4FCKuoIuDR-hcH3J97hZ21Os_4C3W/view?usp=drive_link"},
+        {title: "Annie", year: 2014, tags: "Musical, Family, Drama, Comedy", section: "movies", description: "Annie is a modern musical remake set in New York City, starring Quvenzhané Wallis as a spunky foster kid living with the mean Miss Hannigan", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p10569925_p_v10_ax.jpg", url: "https://drive.google.com/file/d/1GYQqHUdyWMNQJKj4Sa8SGW0ZRX32D5og/view"},
+        {title: "A Bug's Life", year: 1998, tags: "Animation, Adventure, Comedy", section: "movies", description: "An inventive ant recruits circus bugs to save his colony from greedy grasshoppers.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAwmPdv2vWLBMwDxvwctAv6mWDqhl12M05eduDI7sXachLf40:https://lookaside.fbsbx.com/lookaside/crawler/media/%3Fmedia_id%3D8098380346922233&s", url: "https://drive.google.com/file/d/1AIq4OqiMWiY9zZSayF5VID7pfTwSH6BM/view"},
+        {title: "Batman", year: 1989, tags: "Action, Superhero, Crime", section: "movies", description: "Batman rises to protect Gotham City from the Joker’s chaotic schemes.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHOEQvj4bwSCX1yDMut34bnUji6VSd-n2jKko-zUSVP2X3Xy2rj0BNkCsKvUeKqzK2WY9zqw&s=10", url: "https://drive.google.com/file/d/1P8z8U0j5UHxqTq0taTj18TgG6nZwSKYd/view"},
+        {title: "Batman Returns", year: 1992, tags: "Action, Superhero, Crime", section: "movies", description: "Batman faces the Penguin and Catwoman threatening Gotham City.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12631_p_v8_aa.jpg", url: "https://drive.google.com/file/d/1aeYtz38ljtxCCtuVs4x0zuUh2TWKf-K6/view"},
+        {title: "Batman Forever", year: 1995, tags: "Action, Superhero, Crime", section: "movies", description: "Batman must stop Two-Face and the Riddler from destroying Gotham.", poster: "https://resizing.flixster.com/3yyo2qAz1vgclNlmRHzlHQgcNiU=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p16857_p_v8_ac.jpg", url: "https://drive.google.com/file/d/1YFYuZeG8EXxNkPdB7jIIGOFm7ULi349r/view"},
+        {title: "Batman & Robin", year: 1997, tags: "Action, Superhero, Adventure", section: "movies", description: "Batman and Robin face Mr. Freeze and Poison Ivy to save Gotham.", poster: "https://resizing.flixster.com/xJGyHeE3d1oWhg-DEEV4Yk9nVM4=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p19491_p_v8_al.jpg", url: "https://drive.google.com/file/d/1uMzsWkDLeiE0X7M0rm5EUUx3y26yzhc2/view"},
+        {title: "The Dark Knight Rises", year: 2012, tags: "Action, Superhero, Thriller", section: "movies", description: "Batman returns from retirement to protect Gotham from Bane.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQHtvd1nGFx5jyEtLrkG6zjGXyuM6By82nUufnlZHo2oLlWHkGYyMXsTdZbdKclDK-aK64dg&s=10", url: "https://drive.google.com/file/d/1ssHaJjHmu-V5fTC4_AoyABD_KYB1dkNX/view"},
+        {title: "Batman Begins", year: 2005, tags: "Action, Superhero, Thriller", section: "movies", description: "Bruce Wayne trains to become Batman and fight crime in Gotham City.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc0kmuKXGG_lJFe_VEgQSgqafhbzy2AjiD5TeNx4gdsLnRZUQP-Nlxt4QXmugDpn6GqfwP_A&s=10", url: "https://drive.google.com/file/d/1ZegfkrD50sGDUVJ-4d9IiBpR0MTmdphx/view"},
+        {title: "Black Panther", year: 2018, tags: "Action, Superhero, Adventure", section: "movies", description: "T'Challa becomes King of Wakanda and defends his nation from powerful threats.", poster: "https://lumiere-a.akamaihd.net/v1/images/p_blackpanther_19754_4ac13f07.jpeg", url: "https://drive.google.com/file/d/1wdUOiz7tI3R5vTz779h7CesAW5h0kUh1/view"},
+        {title: "Black Panther: Wakanda Forever", year: 2022, tags: "Action, Superhero, Adventure", section: "movies", description: "Wakanda faces new threats while honoring the legacy of Black Panther.", poster: "https://lumiere-a.akamaihd.net/v1/images/pp_disney_blackpanther_wakandaforever_1289_d3419b8f.jpeg?region=0%2C0%2C540%2C810", url: "https://drive.google.com/file/d/198qUcefIK54KnZzxAx6_L8u7l37oCfhK/view"},
+        {title: "The Batman", year: 2022, tags: "Action, Superhero, Crime", section: "movies", description: "Batman investigates corruption and a serial killer in Gotham City.", poster: "https://m.media-amazon.com/images/M/MV5BMmU5NGJlMzAtMGNmOC00YjJjLTgyMzUtNjAyYmE4Njg5YWMyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "LINKhttps://drive.google.com/file/d/16si_yvGyZn5mgvNIHil5xXOR3I8RaTKb/view?usp=sharing_URL"},
+        {title: "The Dark Knight", year: 2008, tags: "Action, Superhero, Crime", section: "movies", description: "Batman faces the Joker as chaos spreads across Gotham City.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxsc3y8f6axKrxHKlFnRaVaByZd9GxgIxdvmurQxJtrby1y05lW1SG0mOnNpwTq90m_pAIjw&s=10", url: "https://drive.google.com/file/d/1CZvw1MgSLVQR9Z9L8qpl8j1oI7DnMDWr/view"},
+        {title: "Batman: The Return of the Joker", year: 2000, tags: "Animation, Superhero, Action", section: "movies", description: "Batman battles the Joker who returns with a new plan for Gotham.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0WIKCTqWAv9t5pXI3WBDM2149SWfLvPbQ3LvQSkVXDXF1GllQNc5VhDMOFk2lo5_YJ4EQ&s=10", url: "https://drive.google.com/file/d/1wEmEjdaO0dp1nonCewG8URl6YsQOk0ru/view"},
+        {title: "Beetlejuice", year: 1988, tags: "Comedy, Fantasy, Horror", section: "movies", description: "A mischievous ghost helps a recently deceased couple haunt their former home.", poster: "https://resizing.flixster.com/TSXIwVS-Bt-y39e-4n7i-YTptB4=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2QwNTMzNjgyLWM0YjktNDBhZC04ZDRlLTczOGE2ZmJjODJkZS5qcGc=", url: "https://drive.google.com/file/d/1fs2-oBGADuUeepkLX2V3zxNNUstHvBTs/view?usp=sharing"},
+        {title: "Beetlejuice Beetlejuice", year: 1988, tags: "Comedy, Fantasy, Horror", section: "movies", description: "Alternate title reference to Beetlejuice classic ghostly antics.", poster: "https://resizing.flixster.com/cmZOwlzbLRAIPCT7Vnk_v0y9z-g=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2Y4ZTcxMDY0LTcyNjctNGM5ZC05OTNlLWViZTQ1ZTFlZmU3My5qcGc=", url: "https://drive.google.com/file/d/1OsCtW4NUV94utDNxmFejUFoH6euf8Ind/view?usp=sharing"},
+        {title: "Blue Beetle", year: 2023, tags: "Action, Superhero, Adventure", section: "movies", description: "Teen Jaime Reyes discovers a powerful alien armor and becomes a superhero.", poster: "https://m.media-amazon.com/images/M/MV5BOTEyYzQzOTMtMWExNi00OWNjLTgwMDUtNzY0YjhmZDBiMTk2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1T2XMXtDAlohPcGdi-u2p9zXF9Os9zkY1/view"},
+        {title: "Barbie", year: 2023, tags: "Adventure, Comedy, Fantasy", section: "movies", description: "Barbie embarks on a colorful adventure full of self-discovery and friendship.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p13472534_p_v8_am.jpg", url: "https://drive.google.com/file/d/1K88LvZ6q9KRwsdiVQ72Wrh5DQqWVLkd3/view?usp=sharing"},
+        {title: "Birds of Prey", year: 2020, tags: "Action, Adventure, Superhero", section: "movies", description: "Harley Quinn teams up with a group of women to save a young girl from a crime lord.", poster: "https://resizing.flixster.com/D1RPoY_6oHrD8NrDCvo9dvhP0hs=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2M3NzU0OGRhLTA5ODAtNDNhYS04YThlLTYwMmEzZWNmZTJhOC53ZWJw", url: "https://drive.google.com/file/d/1AShi8tLLzbPiPO6vDokf8ew-qBbzh5Pb/view?usp=sharing"},
+        {title: "Boyz N The Hood", year: 1991, tags: "Drama, Crime", section: "movies", description: "Three childhood friends navigate life in South Central Los Angeles amidst violence and hardship.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p13227_p_v8_ao.jpg", url: "https://drive.google.com/file/d/1fCv2dJuy8k_NQWAxbNRxqW0_zKetF-uy/view"},
+        {title: "The Blackening", year: 2022, tags: "Comedy, Horror", section: "movies", description: "A group of friends must survive a horror scenario in this satirical take on the genre.", poster: "https://m.media-amazon.com/images/M/MV5BNDI3NTRjNmItYjBkMS00OGRhLTk2MTEtNWM4OTA1MGU5NWExXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1VBG7WXqeiZ3BSvPuWUPCL1_iF9znvPI5/view?usp=sharing"},
+        {title: "The Black Phone", year: 2021, tags: "Horror, Thriller", section: "movies", description: "A kidnapped boy receives mysterious calls from the past victims of a killer.", poster: "https://m.media-amazon.com/images/M/MV5BYmExYmMxN2YtNGVhYy00MThkLWJiMjgtOWY1YWE3NWE4ODc3XkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/140S8bCV6Ht2WticzegM_jfRayS2_Mvn_/view?usp=sharing"},
+        {title: "The Black Phone 2", year: 2026, tags: "Horror, Thriller", section: "movies", description: "The terrifying story continues as more victims confront the supernatural phone.", poster: "https://m.media-amazon.com/images/M/MV5BMTVjMzNmZGYtOWU5NS00NDYzLThhZTktZGNlODIwYWVhMDRmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1Nnkb35gi9f-jc4LvwVDUq8MTLur7mK3L/view?usp=sharing"},
+        {title: "Coraline", year: 2009, tags: "Animation, Fantasy, Horror", section: "movies", description: "A young girl discovers an alternate world with dark secrets.", poster: "https://m.media-amazon.com/images/M/MV5BZDgwNDg2ZWQtMWZmMC00ZTBmLTk2Y2UtNmIxNDVjYWRlNGNjXkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1TFiL16cNmQmG5pSi-s6od4xgymFqK1kJ/view"},
+        {title: "Creed", year: 2015, tags: "Drama, Sport", section: "movies", description: "Adonis Johnson trains with Rocky Balboa to become a boxing champion.", poster: "https://m.media-amazon.com/images/M/MV5BMjY0NjYxMGQtZDAxMy00ZjBjLTg5ZGMtZjgxNDlmZDNlOTdjXkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1w9nVBGOKDax-xCr-caqekW4hcjRUQWZA/view?usp=drive_link"},
+        {title: "Creed 2", year: 2018, tags: "Drama, Sport", section: "movies", description: "Adonis faces his toughest fight against the son of Ivan Drago.", poster: "https://m.media-amazon.com/images/M/MV5BNWU3NWQ1NTgtNzkxZi00OTc0LWEwNzktOGRkYTAyNThhNjEyXkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1KnW-KW6LV-fH0S0R_2sbsEKkKhSFK-OP/view"},
+        {title: "Creed 3", year: 2023, tags: "Drama, Sport", section: "movies", description: "Adonis must fight personal and professional battles in the ring.", poster: "https://m.media-amazon.com/images/M/MV5BYTIzMmEzZmUtZWUyNy00OTFlLWI2NzEtNjBmZGY1OTI5MjBhXkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1j8pGyNx9PHk_Gicns9JlDaX82qBIi1_m/view?usp=drive_link"},
+        {title: "Coco", year: 2017, tags: "Animation, Adventure, Family", section: "movies", description: "A young boy journeys to the Land of the Dead to discover his family's history.", poster: "https://m.media-amazon.com/images/M/MV5BMDIyM2E2NTAtMzlhNy00ZGUxLWI1NjgtZDY5MzhiMDc5NGU3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/194M4dGCwh1hTxVM1-_axnLSdt4trnbK2/view?usp=sharing"},
+        {title: "Cars", year: 2006, tags: "Animation, Adventure, Comedy", section: "movies", description: "Lightning McQueen finds friendship and life lessons in a small town.", poster: "https://m.media-amazon.com/images/M/MV5BOTUxNTMzNGQtMTRiOC00MmY4LWI0MzQtMzc3OTdkMzJiODg4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1RoWQ2LZecPYvsZ48Sah7_xBvZzEHcXL1/view?usp=drive_link"},
+        {title: "Cars 2", year: 2011, tags: "Animation, Adventure, Comedy", section: "movies", description: "Lightning McQueen competes in a world grand prix while Mater gets involved in espionage.", poster: "https://m.media-amazon.com/images/M/MV5BMTUzNTc3MTU3M15BMl5BanBnXkFtZTcwMzIxNTc3NA@@._V1_.jpg", url: "https://drive.google.com/file/d/1YinG1kmgSqWI5kQwfDsQO6vK1xzM6K7o/view?usp=drive_link"},
+        {title: "Child's Play", year: 1988, tags: "Horror, Thriller", section: "movies", description: "A doll possessed by a serial killer terrorizes a family.", poster: "https://m.media-amazon.com/images/M/MV5BOTc2M2FjMDMtYzBmNS00ODMxLWJjOTYtZmNkMDYxMTU5ZTBhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1FPO2K8Oqb1O3qm1qb57NhZHhaGCvQjAz/view?usp=sharing"},
+        {title: "Child's Play 2", year: 1990, tags: "Horror, Thriller", section: "movies", description: "Chucky returns to continue his murderous spree.", poster: "https://m.media-amazon.com/images/M/MV5BNmQ5ZWRhZmMtOWI0OC00OWMzLWIwNzgtMzYzNjNhZDEwNTE1XkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1NXrR22Ja1iaa3PcidheWe6dKmK80A2em/view?usp=drive_link"},
+        {title: "Child's Play (2019)", year: 2019, tags: "Horror, Thriller", section: "movies", description: "A reboot where a high-tech doll becomes dangerously homicidal.", poster: "https://m.media-amazon.com/images/M/MV5BNzMwZTNkYzktM2EwYS00ZGZlLWJhNmQtZWNhMTBlMDUzOWRkXkEyXkFqcGc@._V1_.jpg", url: "https://m.media-amazon.com/images/M/MV5BNzMwZTNkYzktM2EwYS00ZGZlLWJhNmQtZWNhMTBlMDUzOWRkXkEyXkFqcGc@._V1_.jpg"},
+        {title: "Corpse Bride", year: 2005, tags: "Animation, Fantasy, Romance", section: "movies", description: "A man accidentally marries a corpse while rehearsing his wedding vows.", poster: "https://m.media-amazon.com/images/M/MV5BMTk1MTY1NjU4MF5BMl5BanBnXkFtZTcwNjIzMTEzMw@@._V1_.jpg", url: "https://drive.google.com/file/d/1AHqrYm4cItyiEquPHJV5z3H81Cc0cCfI/view?usp=sharing"},
+        {title: "Captain Underpants", year: 2017, tags: "Animation, Comedy, Adventure", section: "movies", description: "Two kids hypnotize their principal into becoming a superhero.", poster: "https://m.media-amazon.com/images/I/81FkW4V668L._AC_UF1000,1000_QL80_.jpg", url: "https://drive.google.com/file/d/1BW7yv_y4uk99Nsjbc--z1beQ_bYYmUXk/view?usp=share_link"},
+        {title: "Seed of Chucky", year: 2004, tags: "Horror, Comedy", section: "movies", description: "Chucky's child comes to life and continues the family tradition of murder.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Curse of Chucky", year: 2013, tags: "Horror, Thriller", section: "movies", description: "Chucky terrorizes a family after being delivered anonymously.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Cult of Chucky", year: 2017, tags: "Horror, Thriller", section: "movies", description: "Chucky returns in a mental institution, causing chaos.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Child's Play 3", year: 1991, tags: "Horror, Thriller", section: "movies", description: "Chucky continues his murderous quest at a military academy.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Coat of Many Colors", year: 2015, tags: "Drama, Biography, Family", section: "movies", description: "The story of Dolly Parton's childhood and the coat she cherished.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Circle of Love", year: 2010, tags: "Romance, Drama", section: "movies", description: "A romantic story about love, friendship, and family.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "The Conjuring", year: 2013, tags: "Horror, Thriller, Mystery", section: "movies", description: "Paranormal investigators help a family terrorized by a dark presence.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Detective Pikachu", year: 2019, tags: "Adventure, Family, Mystery", section: "movies", description: "A young man teams up with a talking Pikachu to solve a missing person case.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Diary Of A Wimpy Kid: Rodrick Rules", year: 2011, tags: "Comedy, Family", section: "movies", description: "Greg deals with his older brother's antics during the summer and school year.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Diary of a Wimpy Kid: Dog Days", year: 2012, tags: "Comedy, Family", section: "movies", description: "Greg navigates summer vacation with his friends and family.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "DND: Honor Among Thieves", year: 2023, tags: "Action, Adventure, Fantasy", section: "movies", description: "A charming thief and his companions go on an epic Dungeons & Dragons adventure.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Despicable Me", year: 2010, tags: "Animation, Comedy, Family", section: "movies", description: "Gru plans the biggest heist in history but meets three orphaned girls who change him.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Despicable Me 2", year: 2013, tags: "Animation, Comedy, Family", section: "movies", description: "Gru teams up with the Anti-Villain League to stop a new criminal.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Despicable Me 3", year: 2017, tags: "Animation, Comedy, Family", section: "movies", description: "Gru reunites with his long-lost twin brother while facing a new villain.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Despicable Me 4", year: 2024, tags: "Animation, Comedy, Family", section: "movies", description: "Gru and the Minions return for another adventure filled with laughs and action.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Descendants: The Rise of Red", year: 2022, tags: "Musical, Fantasy, Family", section: "movies", description: "The children of Disney villains embark on a journey to change their destinies.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Deadpool", year: 2016, tags: "Action, Comedy, Superhero", section: "movies", description: "Mercenary Wade Wilson becomes Deadpool and seeks revenge while breaking the fourth wall.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Deadpool 2", year: 2018, tags: "Action, Comedy, Superhero", section: "movies", description: "Deadpool forms X-Force to protect a young mutant from a time-traveling soldier.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Deadpool and Wolverine", year: 2017, tags: "Action, Comedy, Superhero", section: "movies", description: "An animated short featuring Deadpool and Wolverine's chaotic teamwork.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Dune: Part Two", year: 2024, tags: "Adventure, Sci-Fi, Drama", section: "movies", description: "Paul Atreides continues his journey to avenge his family and reclaim Arrakis.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Dogman", year: 2023, tags: "Drama, Crime", section: "movies", description: "A dog groomer is drawn into a criminal underworld, testing morality and loyalty.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "The Mighty Ducks", year: 1992, tags: "Family, Sport, Comedy", section: "movies", description: "A lawyer coaches a youth hockey team, teaching them teamwork and courage.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "D2: The Mighty Ducks", year: 1994, tags: "Family, Sport, Comedy", section: "movies", description: "The Ducks compete in the Junior Goodwill Games, facing tough opponents.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Elf", year: 2003, tags: "Comedy, Family, Fantasy", section: "movies", description: "A human raised by elves travels to New York to find his real father.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Evil Dead", year: 1981, tags: "Horror, Thriller", section: "movies", description: "A group of friends awaken demons in a remote cabin, facing terrifying consequences.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Evil Dead II", year: 1987, tags: "Horror, Comedy", section: "movies", description: "Ash continues to fight the undead in a darkly comedic and gory battle.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "8 Mile", year: 2002, tags: "Drama, Music", section: "movies", description: "A young rapper struggles to escape his life in Detroit while pursuing his dream.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Free Guy", year: 2021, tags: "Action, Comedy, Sci-Fi", section: "movies", description: "A video game NPC becomes self-aware and decides to become the hero of his story.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday", year: 1995, tags: "Comedy, Drama", section: "movies", description: "Two friends navigate a day of comedic misadventures in their neighborhood.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Finding Nemo", year: 2003, tags: "Animation, Adventure, Family", section: "movies", description: "A clownfish crosses the ocean to rescue his son with the help of new friends.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th", year: 1980, tags: "Horror, Slasher", section: "movies", description: "Camp counselors are stalked by a mysterious killer at Camp Crystal Lake.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part 2", year: 1981, tags: "Horror, Slasher", section: "movies", description: "A new group of counselors faces the wrath of Jason Voorhees.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part 3", year: 1982, tags: "Horror, Slasher", section: "movies", description: "Jason dons his iconic hockey mask and terrorizes more victims.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th: The Final Chapter", year: 1984, tags: "Horror, Slasher", section: "movies", description: "Jason continues his murderous rampage while survivors try to fight back.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part V: A New Beginning", year: 1985, tags: "Horror, Slasher", section: "movies", description: "A troubled teen faces the return of Jason in a new killing spree.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part VI: Jason Lives", year: 1986, tags: "Horror, Slasher", section: "movies", description: "Jason is resurrected and continues his deadly quest.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part VII: The New Blood", year: 1988, tags: "Horror, Slasher", section: "movies", description: "A telekinetic girl faces off against the unstoppable Jason Voorhees.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Friday the 13th Part VIII: Jason Takes Manhattan", year: 1989, tags: "Horror, Slasher", section: "movies", description: "Jason terrorizes a cruise ship and later New York City.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "The Final Friday", year: 1994, tags: "Horror, Slasher", section: "movies", description: "Jason returns in a final showdown against his victims.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Jason X", year: 2001, tags: "Horror, Sci-Fi", section: "movies", description: "Jason Voorhees is frozen and wakes up in the future aboard a spaceship.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "FNAF", year: 2023, tags: "Horror, Thriller", section: "movies", description: "Animatronics terrorize a security guard in a dark, twisted story.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "FNAF 2", year: 2025, tags: "Horror, Thriller", section: "movies", description: "The terrifying events continue in a new night at Freddy Fazbear’s Pizza.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Frozen", year: 2013, tags: "Animation, Adventure, Family", section: "movies", description: "Princess Anna sets out to find her sister Elsa whose icy powers have trapped the kingdom in eternal winter.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Frozen 2", year: 2019, tags: "Animation, Adventure, Family", section: "movies", description: "Elsa and Anna journey to discover the origin of Elsa's powers.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Gran Turismo", year: 2023, tags: "Action, Drama, Sport", section: "movies", description: "A young gamer turns into a professional race car driver.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Guardians of the Galaxy Vol. 3", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "The Guardians face new threats and deal with Rocket's past.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Good Burger", year: 1997, tags: "Comedy, Family", section: "movies", description: "Two friends navigate the challenges of working at a fast-food restaurant.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Good Burger 2", year: 2024, tags: "Comedy, Family", section: "movies", description: "The duo returns for another fast-food adventure.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Ghostbusters", year: 1984, tags: "Comedy, Fantasy, Sci-Fi", section: "movies", description: "A team of parapsychologists starts a ghost-catching business in New York City.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Grease", year: 1978, tags: "Musical, Romance, Comedy", section: "movies", description: "Teen love blossoms during a summer romance at Rydell High.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Garfield", year: 2004, tags: "Comedy, Family", section: "movies", description: "The lasagna-loving cat gets into hilarious adventures in the human world.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Get Out", year: 2017, tags: "Horror, Thriller, Mystery", section: "movies", description: "A young African-American man uncovers horrifying secrets while visiting his girlfriend’s family.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Garfield 2004", year: 2004, tags: "Comedy, Family", section: "movies", description: "Garfield navigates life in a world of humans, causing chaos and laughter.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hidden Figures", year: 2016, tags: "Biography, Drama, History", section: "movies", description: "Three African-American women mathematicians at NASA help launch John Glenn into orbit.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Home", year: 2015, tags: "Animation, Adventure, Comedy", section: "movies", description: "An alien on the run befriends a young girl as they search for her family.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Home Alone", year: 1990, tags: "Comedy, Family", section: "movies", description: "A boy defends his home from burglars after being left behind during Christmas.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Home Alone 2: Lost in New York", year: 1992, tags: "Comedy, Family", section: "movies", description: "Kevin finds himself alone in New York City and faces the same burglars again.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hotel Transylvania", year: 2012, tags: "Animation, Comedy, Family", section: "movies", description: "Dracula runs a hotel for monsters, but a human visitor complicates things.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hotel Transylvania 2", year: 2015, tags: "Animation, Comedy, Family", section: "movies", description: "Dracula tries to bring out the monster in his grandson while dealing with humans.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hotel Transylvania 3: Summer Vacation", year: 2018, tags: "Animation, Comedy, Family", section: "movies", description: "The monsters take a vacation on a luxury cruise, encountering love and chaos.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hotel Transylvania 4: Transformania", year: 2022, tags: "Animation, Comedy, Family", section: "movies", description: "Drac and friends are transformed into humans, leading to hilarious adventures.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hercules", year: 1997, tags: "Animation, Adventure, Family", section: "movies", description: "The son of Zeus must become a true hero to reclaim his godhood.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween", year: 1978, tags: "Horror, Thriller, Slasher", section: "movies", description: "Michael Myers escapes from an asylum and terrorizes a small town on Halloween night.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 2", year: 1981, tags: "Horror, Thriller, Slasher", section: "movies", description: "The terrifying events of Halloween continue as Michael Myers pursues Laurie Strode.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 3: Season of the Witch", year: 1982, tags: "Horror, Thriller", section: "movies", description: "A standalone Halloween story involving deadly masks and corporate evil.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 4: The Return of Michael Myers", year: 1988, tags: "Horror, Thriller, Slasher", section: "movies", description: "Michael Myers returns to terrorize his young niece in Haddonfield.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 5: The Revenge of Michael Myers", year: 1989, tags: "Horror, Thriller, Slasher", section: "movies", description: "Michael Myers continues his relentless pursuit of his family.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 6: The Curse of Michael Myers", year: 1995, tags: "Horror, Thriller, Slasher", section: "movies", description: "The mystery of Michael Myers' curse deepens as he stalks his victims.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween 7: H20", year: 1998, tags: "Horror, Thriller, Slasher", section: "movies", description: "Laurie Strode faces Michael Myers after years of hiding from him.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween: Resurrection", year: 2002, tags: "Horror, Thriller, Slasher", section: "movies", description: "Michael Myers stalks contestants in a live TV reality show at his childhood home.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween (2007)", year: 2007, tags: "Horror, Thriller, Slasher", section: "movies", description: "Rob Zombie’s remake of the original classic, exploring Michael Myers’ backstory.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Halloween II (2009)", year: 2009, tags: "Horror, Thriller, Slasher", section: "movies", description: "Rob Zombie’s sequel continues Michael Myers’ rampage against Laurie Strode.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hamilton", year: 2020, tags: "Musical, History, Drama", section: "movies", description: "The filmed version of the hit Broadway musical about the life of Alexander Hamilton.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "How to Train Your Dragon", year: 2010, tags: "Animation, Adventure, Family", section: "movies", description: "A young Viking befriends a dragon, changing the way his village views the creatures.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "How to Train Your Dragon 2", year: 2014, tags: "Animation, Adventure, Family", section: "movies", description: "Hiccup discovers a secret ice cave and a new threat to the dragons.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "How to Train Your Dragon: The Hidden World", year: 2019, tags: "Animation, Adventure, Family", section: "movies", description: "Hiccup searches for a hidden dragon utopia while facing the villainous Grimmel.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Head Over Heels", year: 2001, tags: "Comedy, Romance", section: "movies", description: "A wealthy couple in England tries to reunite with their son while dodging villains.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Sorcerer's Stone", year: 2001, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry discovers he is a wizard and begins his journey at Hogwarts.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Chamber of Secrets", year: 2002, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry and friends investigate the mystery of the Chamber of Secrets at Hogwarts.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Prisoner of Azkaban", year: 2004, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry learns more about his past while facing a dangerous escaped prisoner.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Goblet of Fire", year: 2005, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry competes in the deadly Triwizard Tournament and faces a dark return.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Order of the Phoenix", year: 2007, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry forms Dumbledore’s Army to prepare for Voldemort's growing power.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Half-Blood Prince", year: 2009, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry learns more about Voldemort's past and faces new dangers at Hogwarts.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Deathly Hallows: Part 1", year: 2010, tags: "Fantasy, Adventure, Family", section: "movies", description: "Harry, Ron, and Hermione search for Voldemort’s Horcruxes while on the run.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Harry Potter and the Deathly Hallows: Part 2", year: 2011, tags: "Fantasy, Adventure, Family", section: "movies", description: "The final battle at Hogwarts concludes Harry’s fight against Voldemort.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "High School Musical", year: 2006, tags: "Musical, Romance, Family", section: "movies", description: "Troy and Gabriella navigate love and friendship while auditioning for the school musical.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "High School Musical 2", year: 2007, tags: "Musical, Romance, Family", section: "movies", description: "The Wildcats work at a country club over the summer, facing personal challenges.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "High School Musical 3: Senior Year", year: 2008, tags: "Musical, Romance, Family", section: "movies", description: "The Wildcats prepare for graduation and the final school musical.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Hairspray", year: 2007, tags: "Musical, Comedy, Family", section: "movies", description: "A teen girl pursues her dreams of dancing on a TV show while challenging societal norms.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "How the Grinch Stole Christmas", year: 2000, tags: "Comedy, Family, Fantasy", section: "movies", description: "The Grinch tries to ruin Christmas for Whoville but discovers the spirit of the holiday.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Incredibles", year: 2004, tags: "Animation, Action, Adventure", section: "movies", description: "A family of superheroes must come out of retirement to save the world.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Incredibles 2", year: 2018, tags: "Animation, Action, Adventure", section: "movies", description: "The Incredibles return, balancing family life and fighting a new villain.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Inside Out", year: 2015, tags: "Animation, Family, Adventure", section: "movies", description: "Inside the mind of a young girl, emotions guide her through life.", poster: "", url: ""},
+        {title: "Inside Out 2", year: 2024, tags: "Animation, Family, Adventure", section: "movies", description: "Riley's emotions face new challenges as she grows up.", poster: "", url: ""},
+        {title: "The Instigators", year: 2023, tags: "Crime, Thriller", section: "movies", description: "A heist goes wrong as tensions rise among friends.", poster: "", url: ""},
+        {title: "Thirteen", year: 2003, tags: "Drama", section: "movies", description: "A teenager navigates peer pressure and adolescence in LA.", poster: "", url: ""},
+        {title: "Jurassic Park", year: 1993, tags: "Adventure, Sci-Fi, Thriller", section: "movies", description: "Dinosaurs are brought back to life on an island theme park.", poster: "", url: ""},
+        {title: "Joker", year: 2019, tags: "Crime, Drama, Thriller", section: "movies", description: "A failed comedian descends into madness in Gotham City.", poster: "", url: ""},
+        {title: "Joker: Folie à Deux", year: 2024, tags: "Crime, Drama, Musical", section: "movies", description: "Joker returns, this time with a dark musical twist.", poster: "", url: ""},
+        {title: "Jingle All The Way", year: 1996, tags: "Comedy, Family", section: "movies", description: "A dad tries to get the hottest toy for his son before Christmas.", poster: "", url: ""},
+        {title: "John Wick", year: 2014, tags: "Action, Thriller", section: "movies", description: "An ex-hitman seeks revenge after losing his dog and car.", poster: "", url: ""},
+        {title: "Jumanji", year: 1995, tags: "Adventure, Fantasy, Comedy", section: "movies", description: "A magical board game unleashes wild adventures on its players.", poster: "", url: ""},
+        {title: "Jumanji: Welcome to the Jungle", year: 2017, tags: "Adventure, Comedy, Fantasy", section: "movies", description: "Four teens are sucked into a video game and must survive.", poster: "", url: ""},
+        {title: "Jumanji: The Next Level", year: 2019, tags: "Adventure, Comedy, Fantasy", section: "movies", description: "The gang returns to rescue one of their own in the dangerous game world.", poster: "", url: ""},
+        {title: "K Pop Demon Hunters", year: 2024, tags: "Action, Fantasy, Music", section: "movies", description: "Supernatural K-pop idols battle dark forces on stage and off.", poster: "", url: ""},
+        {title: "Kill Bill Volume 1", year: 2003, tags: "Action, Thriller", section: "movies", description: "A former assassin seeks revenge on her ex-colleagues.", poster: "", url: ""},
+        {title: "Kill Bill Volume 2", year: 2004, tags: "Action, Thriller", section: "movies", description: "The Bride continues her quest to confront Bill and finish her mission.", poster: "", url: ""},
+        {title: "Kung Fu Panda", year: 2008, tags: "Animation, Action, Comedy", section: "movies", description: "A clumsy panda becomes the Dragon Warrior and must save the valley.", poster: "", url: ""},
+        {title: "Kung Fu Panda 2", year: 2011, tags: "Animation, Action, Comedy", section: "movies", description: "Po faces a new villain threatening China with a secret weapon.", poster: "", url: ""},
+        {title: "Kung Fu Panda 3", year: 2016, tags: "Animation, Action, Comedy", section: "movies", description: "Po meets his long-lost father and trains panda warriors to fight evil.", poster: "", url: ""},
+        {title: "Kung Fu Panda 4", year: 2024, tags: "Animation, Action, Comedy", section: "movies", description: "Po returns for another epic battle to protect the Valley of Peace.", poster: "", url: ""},
+        {title: "Karate Kid", year: 1984, tags: "Action, Drama, Family", section: "movies", description: "A young boy learns martial arts to defend himself and gain confidence.", poster: "", url: ""},
+        {title: "Labyrinth", year: 1986, tags: "Fantasy, Adventure, Family", section: "movies", description: "A girl journeys through a magical labyrinth to rescue her brother.", poster: "", url: ""},
+        {title: "Leprechaun 1", year: 1993, tags: "Horror, Comedy", section: "movies", description: "A murderous leprechaun terrorizes a young couple to reclaim his gold.", poster: "", url: ""},
+        {title: "Leprechaun 2", year: 1994, tags: "Horror, Comedy", section: "movies", description: "The leprechaun returns to pursue love and chaos in the modern world.", poster: "", url: ""},
+        {title: "Leprechaun 3", year: 1995, tags: "Horror, Comedy", section: "movies", description: "The leprechaun escapes to Las Vegas and spreads havoc.", poster: "", url: ""},
+        {title: "Leprechaun 4", year: 1997, tags: "Horror, Comedy", section: "movies", description: "The leprechaun escapes to Hollywood to wreak havoc on a movie set.", poster: "", url: ""},
+        {title: "Madagascar", year: 2005, tags: "Animation, Adventure, Comedy", section: "movies", description: "Zoo animals find themselves stranded on the island of Madagascar.", poster: "", url: ""},
+        {title: "Madagascar 2", year: 2008, tags: "Animation, Adventure, Comedy", section: "movies", description: "The animals attempt to return to New York, facing new adventures in Africa.", poster: "", url: ""},
+        {title: "Madagascar 3", year: 2012, tags: "Animation, Adventure, Comedy", section: "movies", description: "The animals join a traveling circus to get back home.", poster: "", url: ""},
+        {title: "Megamind", year: 2010, tags: "Animation, Action, Comedy", section: "movies", description: "A supervillain faces an existential crisis when he finally defeats his nemesis.", poster: "", url: ""},
+        {title: "Miraculous New York", year: 2023, tags: "Animation, Action, Adventure", section: "movies", description: "Superheroes protect New York from magical threats.", poster: "", url: ""},
+        {title: "Miraculous Shanghai", year: 2023, tags: "Animation, Action, Adventure", section: "movies", description: "The heroes travel to Shanghai to stop a new supervillain.", poster: "", url: ""},
+        {title: "Minions", year: 2015, tags: "Animation, Comedy, Family", section: "movies", description: "The history and adventures of the minions before meeting Gru.", poster: "", url: ""},
+        {title: "Minions: Rise of Gru", year: 2022, tags: "Animation, Comedy, Family", section: "movies", description: "Young Gru teams up with the Minions to become a supervillain.", poster: "", url: ""},
+        {title: "M3GAN", year: 2022, tags: "Horror, Sci-Fi, Thriller", section: "movies", description: "An AI doll becomes dangerously overprotective of a young girl.", poster: "", url: ""},
+        {title: "Boo! A Madea Halloween", year: 2016, tags: "Comedy, Family", section: "movies", description: "Madea deals with tricksters during a haunted Halloween night.", poster: "", url: ""},
+        {title: "Boo 2! A Madea Halloween", year: 2017, tags: "Comedy, Family", section: "movies", description: "Madea faces more Halloween chaos with her family and friends.", poster: "", url: ""},
+        {title: "Maleficent", year: 2014, tags: "Fantasy, Adventure", section: "movies", description: "The story of the dark fairy Maleficent and her complex relationship with Princess Aurora.", poster: "", url: ""},
+        {title: "Mortal Kombat", year: 2021, tags: "Action, Fantasy", section: "movies", description: "Earth's fighters must save the realm in a deadly tournament.", poster: "", url: ""},
+        {title: "Mean Girls", year: 2004, tags: "Comedy, Teen", section: "movies", description: "A girl navigates high school cliques after moving to a new town.", poster: "", url: ""},
+        {title: "Major Payne", year: 1995, tags: "Comedy, Family", section: "movies", description: "A tough Marine major is assigned to train misfit kids at a military academy.", poster: "", url: ""},
+        {title: "Monsters Inc", year: 2001, tags: "Animation, Comedy, Family", section: "movies", description: "Monsters generate power by scaring children—but laughter is more powerful.", poster: "", url: ""},
+        {title: "The Matrix", year: 1999, tags: "Action, Sci-Fi", section: "movies", description: "A hacker discovers the true nature of reality and his role in the war against machines.", poster: "", url: ""},
+        {title: "Moana", year: 2016, tags: "Animation, Adventure, Family", section: "movies", description: "A young girl sets sail to save her island and find herself.", poster: "", url: ""},
+        {title: "Moana 2", year: 2025, tags: "Animation, Adventure, Family", section: "movies", description: "Moana continues her journey across the ocean, facing new challenges.", poster: "", url: ""},
+        {title: "Mufasa", year: 2024, tags: "Animation, Drama, Adventure", section: "movies", description: "The untold story of Mufasa's rise in the Pride Lands.", poster: "", url: ""},
+        {title: "Mulan", year: 2020, tags: "Action, Adventure, Drama", section: "movies", description: "A young woman disguises herself as a soldier to save her father and country.", poster: "", url: ""},
+        {title: "A Minecraft Movie", year: 2025, tags: "Animation, Adventure", section: "movies", description: "Adventures unfold in the blocky universe of Minecraft.", poster: "", url: ""},
+        {title: "Norbit", year: 2007, tags: "Comedy, Romance", section: "movies", description: "A mild-mannered man navigates life with his overbearing wife.", poster: "", url: ""},
+        {title: "Pacific Rim", year: 2013, tags: "Action, Sci-Fi", section: "movies", description: "Giant robots battle massive monsters to save humanity.", poster: "", url: ""},
+        {title: "Pacific Rim Uprising", year: 2018, tags: "Action, Sci-Fi", section: "movies", description: "A new generation of pilots faces an even bigger kaiju threat.", poster: "", url: ""},
+        {title: "Puss in Boots: The Last Wish", year: 2022, tags: "Animation, Adventure, Comedy", section: "movies", description: "Puss in Boots goes on a quest to restore his nine lives.", poster: "", url: ""},
+        {title: "Power Rangers: The Movie", year: 1995, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Power Rangers battle a new villain threatening Earth.", poster: "", url: ""},
+        {title: "Peanuts", year: 2015, tags: "Animation, Family, Comedy", section: "movies", description: "Charlie Brown and Snoopy face hilarious adventures and life lessons.", poster: "", url: ""},
+        {title: "Polar Express", year: 2004, tags: "Animation, Adventure, Family", section: "movies", description: "A magical train ride takes a boy to the North Pole on Christmas Eve.", poster: "", url: ""},
+        {title: "Paw Patrol: The Mighty Movie", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "The Paw Patrol pups get superpowers and face a new villain.", poster: "", url: ""},
+        {title: "Power Rangers", year: 2017, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Teenagers gain powers and must save the world from evil forces.", poster: "", url: ""},
+        {title: "Piece By Piece", year: 2023, tags: "Drama, Music", section: "movies", description: "A young artist navigates fame, family, and love in the music industry.", poster: "", url: ""},
+        {title: "Pixels", year: 2015, tags: "Action, Comedy, Sci-Fi", section: "movies", description: "Arcade game characters attack Earth and heroes must stop them.", poster: "", url: ""},
+        {title: "Rise of the Planet of the Apes", year: 2011, tags: "Action, Sci-Fi, Drama", section: "movies", description: "A scientist’s experiments lead to the rise of intelligent apes.", poster: "", url: ""},
+        {title: "Ready Player One", year: 2018, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "A virtual reality treasure hunt tests players’ courage and wit.", poster: "", url: ""},
+        {title: "Rio", year: 2011, tags: "Animation, Adventure, Comedy", section: "movies", description: "A domesticated macaw discovers adventure in Rio de Janeiro.", poster: "", url: ""},
+        {title: "Rio 2", year: 2014, tags: "Animation, Adventure, Comedy", section: "movies", description: "Blu and his family discover the Amazon and face new challenges.", poster: "", url: ""},
+        {title: "Real Steel", year: 2011, tags: "Action, Sci-Fi, Drama", section: "movies", description: "A father and son train a robot boxer to compete in the ring.", poster: "", url: ""},
+        {title: "Ratatouille", year: 2007, tags: "Animation, Comedy, Family", section: "movies", description: "A rat with culinary skills dreams of becoming a chef in Paris.", poster: "", url: ""},
+        {title: "Ron's Gone Wrong", year: 2021, tags: "Animation, Comedy, Family", section: "movies", description: "A boy and his faulty robot learn about friendship and technology.", poster: "", url: ""},
+        {title: "Rambo 3", year: 1988, tags: "Action, Adventure, Thriller", section: "movies", description: "John Rambo returns to rescue his former commander from enemy forces.", poster: "", url: ""},
+        {title: "Rugrats The Movie", year: 1998, tags: "Animation, Adventure, Family", section: "movies", description: "The babies go on a grand adventure to return a lost toy.", poster: "", url: ""},
+        {title: "Rugrats In Paris", year: 2000, tags: "Animation, Adventure, Family", section: "movies", description: "The Rugrats travel to Paris, facing new adventures and challenges.", poster: "", url: ""},
+        {title: "Romeo + Juliet", year: 1996, tags: "Drama, Romance", section: "movies", description: "A modern retelling of Shakespeare’s tragic love story.", poster: "", url: ""},
+        {title: "Road to El Dorado", year: 2000, tags: "Animation, Adventure, Comedy", section: "movies", description: "Two conmen search for the legendary city of gold.", poster: "", url: ""},
+        {title: "Rush Hour", year: 1998, tags: "Action, Comedy, Crime", section: "movies", description: "A detective and a cop from different worlds team up to solve crimes.", poster: "", url: ""},
+        {title: "Rush Hour 2", year: 2001, tags: "Action, Comedy, Crime", section: "movies", description: "The duo faces an international criminal plot in Hong Kong.", poster: "", url: ""},
+        {title: "Rush Hour 3", year: 2007, tags: "Action, Comedy, Crime", section: "movies", description: "The team travels to Paris to stop a deadly crime syndicate.", poster: "", url: ""},
+        {title: "Saw", year: 2004, tags: "Horror, Thriller", section: "movies", description: "Two men must escape a deadly trap set by a sadistic mastermind.", poster: "", url: ""},
+        {title: "Saw 2", year: 2005, tags: "Horror, Thriller", section: "movies", description: "Detectives discover more victims in Jigsaw's gruesome games.", poster: "", url: ""},
+        {title: "Saw 3", year: 2006, tags: "Horror, Thriller", section: "movies", description: "The terror continues as more victims face Jigsaw’s traps.", poster: "", url: ""},
+        {title: "Saw 4", year: 2007, tags: "Horror, Thriller", section: "movies", description: "Jigsaw's legacy continues with new victims facing deadly traps.", poster: "", url: ""},
+        {title: "Saw 5", year: 2008, tags: "Horror, Thriller", section: "movies", description: "A detective investigates more twisted games left by Jigsaw.", poster: "", url: ""},
+        {title: "Saw 6", year: 2009, tags: "Horror, Thriller", section: "movies", description: "The deadly games continue, revealing secrets of the past.", poster: "", url: ""},
+        {title: "Saw 7", year: 2010, tags: "Horror, Thriller", section: "movies", description: "The final chapter of Jigsaw’s lethal plans unfolds.", poster: "", url: ""},
+        {title: "Scrooged", year: 1988, tags: "Comedy, Fantasy, Drama", section: "movies", description: "A cynical TV executive is visited by three spirits on Christmas Eve.", poster: "", url: ""},
+        {title: "Scream", year: 1996, tags: "Horror, Mystery, Thriller", section: "movies", description: "A masked killer targets teenagers in a small town.", poster: "", url: ""},
+        {title: "Scream 2", year: 1997, tags: "Horror, Mystery, Thriller", section: "movies", description: "The killings continue at a college, as survivors face new terror.", poster: "", url: ""},
+        {title: "Scream 3", year: 2000, tags: "Horror, Mystery, Thriller", section: "movies", description: "The mystery of the killer deepens with new Hollywood victims.", poster: "", url: ""},
+        {title: "Scream 4", year: 2011, tags: "Horror, Mystery, Thriller", section: "movies", description: "A new generation faces the returning Ghostface killer.", poster: "", url: ""},
+        {title: "Scream 5", year: 2022, tags: "Horror, Mystery, Thriller", section: "movies", description: "The terror returns in Woodsboro with new and old victims.", poster: "", url: ""},
+        {title: "Scream 6", year: 2023, tags: "Horror, Mystery, Thriller", section: "movies", description: "Survivors confront Ghostface once again, far from home.", poster: "", url: ""},
+        {title: "Shark Tale", year: 2004, tags: "Animation, Comedy, Family", section: "movies", description: "A small fish becomes an accidental hero in the underwater world.", poster: "", url: ""},
+        {title: "Space Jam", year: 1996, tags: "Animation, Adventure, Comedy", section: "movies", description: "Michael Jordan teams up with Looney Tunes to win a basketball game.", poster: "", url: ""},
+        {title: "Space Jam: A New Legacy", year: 2021, tags: "Animation, Adventure, Comedy", section: "movies", description: "LeBron James enters a digital world to rescue his son.", poster: "", url: ""},
+        {title: "Sonic", year: 2020, tags: "Action, Adventure, Comedy", section: "movies", description: "Sonic the Hedgehog arrives on Earth and teams up with a human ally.", poster: "", url: ""},
+        {title: "Sonic 2", year: 2022, tags: "Action, Adventure, Comedy", section: "movies", description: "Sonic faces a new villain while protecting his friends.", poster: "", url: ""},
+        {title: "Sonic 3", year: 2024, tags: "Action, Adventure, Comedy", section: "movies", description: "Sonic continues his high-speed adventures against new threats.", poster: "", url: ""},
+        {title: "Spider-Man: Homecoming", year: 2017, tags: "Action, Adventure, Superhero", section: "movies", description: "Peter Parker balances high school life with being Spider-Man.", poster: "", url: ""},
+        {title: "Spider-Man: Far From Home", year: 2019, tags: "Action, Adventure, Superhero", section: "movies", description: "Spider-Man faces a new villain while on a European school trip.", poster: "", url: ""},
+        {title: "Spider-Man: Into the Spider-Verse", year: 2018, tags: "Animation, Action, Superhero", section: "movies", description: "Miles Morales becomes Spider-Man and meets other Spider-People from different dimensions.", poster: "", url: ""},
+        {title: "Spider-Man: Across The Spider-Verse", year: 2023, tags: "Animation, Action, Superhero", section: "movies", description: "Miles travels through multiple universes with Gwen and new Spider-People.", poster: "", url: ""},
+        {title: "Spider-Man", year: 2002, tags: "Action, Adventure, Superhero", section: "movies", description: "Peter Parker becomes Spider-Man and fights the Green Goblin.", poster: "", url: ""},
+        {title: "Spider-Man 2", year: 2004, tags: "Action, Adventure, Superhero", section: "movies", description: "Spider-Man faces Doctor Octopus while balancing his personal life.", poster: "", url: ""},
+        {title: "Spider-Man 3", year: 2007, tags: "Action, Adventure, Superhero", section: "movies", description: "Spider-Man faces multiple enemies and struggles with a dark influence.", poster: "", url: ""},
+        {title: "Shazam", year: 2019, tags: "Action, Adventure, Comedy", section: "movies", description: "A teen transforms into an adult superhero with magical powers.", poster: "", url: ""},
+        {title: "Shazam: Fury of the Gods", year: 2023, tags: "Action, Adventure, Comedy", section: "movies", description: "Shazam faces new mythical threats with his superhero family.", poster: "", url: ""},
+        {title: "Amazing Spider-Man", year: 2012, tags: "Action, Adventure, Superhero", section: "movies", description: "Peter Parker discovers his powers and faces the Lizard.", poster: "", url: ""},
+        {title: "Amazing Spider-Man 2", year: 2014, tags: "Action, Adventure, Superhero", section: "movies", description: "Spider-Man faces Electro and other challenges in New York.", poster: "", url: ""},
+        {title: "Superman (2025)", year: 2025, tags: "Action, Adventure, Superhero", section: "movies", description: "Superman returns to face a new threat to Earth.", poster: "", url: ""},
+        {title: "Suicide Squad", year: 2016, tags: "Action, Adventure, Superhero", section: "movies", description: "A team of villains is forced to complete dangerous missions.", poster: "", url: ""},
+        {title: "The Suicide Squad", year: 2021, tags: "Action, Adventure, Superhero", section: "movies", description: "A new squad of villains is sent on a deadly mission.", poster: "", url: ""},
+        {title: "Star Wars: The Phantom Menace", year: 1999, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Young Anakin Skywalker is discovered as the galaxy faces new threats.", poster: "", url: ""},
+        {title: "Star Wars: Attack of the Clones", year: 2002, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Anakin grows older as the Republic faces a growing threat.", poster: "", url: ""},
+        {title: "Star Wars: Revenge of the Sith", year: 2005, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Anakin succumbs to the dark side as the Clone Wars end.", poster: "", url: ""},
+        {title: "Star Wars: A New Hope", year: 1977, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Luke Skywalker begins his journey as a Rebel against the Empire.", poster: "", url: ""},
+        {title: "Star Wars: The Last Jedi", year: 2017, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Resistance faces the First Order as Rey trains with Luke.", poster: "", url: ""},
+        {title: "Star Wars: The Empire Strikes Back", year: 1980, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Rebels suffer a major defeat while Luke trains with Yoda.", poster: "", url: ""},
+        {title: "Star Wars: The Force Awakens", year: 2015, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "A new hero rises as the First Order threatens the galaxy.", poster: "", url: ""},
+        {title: "Star Wars: The Rise of Skywalker", year: 2019, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The final battle between the Resistance and the First Order unfolds.", poster: "", url: ""},
+        {title: "Star Wars: Solo – A Star Wars Story", year: 2018, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The origin story of Han Solo and his adventures before joining the Rebellion.", poster: "", url: ""},
+        {title: "Star Wars: The Clone Wars", year: 2008, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Animated film that starts the Clone Wars saga in the Star Wars universe.", poster: "", url: ""},
+        {title: "Strays", year: 2022, tags: "Animation, Comedy, Family", section: "movies", description: "Neighborhood animals go on an adventurous journey to find their way home.", poster: "", url: ""},
+        {title: "Sing", year: 2016, tags: "Animation, Comedy, Music", section: "movies", description: "A koala hosts a singing competition to save his theater.", poster: "", url: ""},
+        {title: "Sing 2", year: 2021, tags: "Animation, Comedy, Music", section: "movies", description: "Buster Moon and his friends aim for the grand stage in Redshore City.", poster: "", url: ""},
+        {title: "Snitch", year: 2013, tags: "Action, Crime, Drama", section: "movies", description: "A father goes undercover to save his son from a long prison sentence.", poster: "", url: ""},
+        {title: "Shrek", year: 2001, tags: "Animation, Comedy, Adventure", section: "movies", description: "An ogre’s life changes when he rescues a princess with a talkative donkey.", poster: "", url: ""},
+        {title: "Shrek 2", year: 2004, tags: "Animation, Comedy, Adventure", section: "movies", description: "Shrek meets Fiona’s royal parents, causing chaos and adventure.", poster: "", url: ""},
+        {title: "Shrek the Third", year: 2007, tags: "Animation, Comedy, Adventure", section: "movies", description: "Shrek sets out to find Fiona’s cousin to be the next king.", poster: "", url: ""},
+        {title: "Shrek Forever After", year: 2010, tags: "Animation, Comedy, Adventure", section: "movies", description: "Shrek faces a new reality where he was never born.", poster: "", url: ""},
+        {title: "Scary Movie", year: 2000, tags: "Comedy, Horror", section: "movies", description: "A parody of popular horror movies filled with outrageous humor.", poster: "", url: ""},
+        {title: "Scary Movie 2", year: 2001, tags: "Comedy, Horror", section: "movies", description: "The parody continues with a haunted mansion and more laughs.", poster: "", url: ""},
+        {title: "Scary Movie 3", year: 2003, tags: "Comedy, Horror", section: "movies", description: "More horror movie spoofs, including aliens and mysterious threats.", poster: "", url: ""},
+        {title: "Scary Movie 4", year: 2006, tags: "Comedy, Horror", section: "movies", description: "Parodies of horror and sci-fi films with ridiculous comedy.", poster: "", url: ""},
+        {title: "Scary Movie 5", year: 2013, tags: "Comedy, Horror", section: "movies", description: "The continuing spoof of popular movies with new absurdity.", poster: "", url: ""},
+        {title: "Sleepy Hollow", year: 1999, tags: "Horror, Fantasy, Mystery", section: "movies", description: "Ichabod Crane investigates the legendary Headless Horseman.", poster: "", url: ""},
+        {title: "Smile", year: 2022, tags: "Horror, Thriller", section: "movies", description: "A woman is haunted by a terrifying curse after witnessing a traumatic event.", poster: "", url: ""},
+        {title: "Smile 2", year: 2024, tags: "Horror, Thriller", section: "movies", description: "The curse spreads further as new victims face its terrifying consequences.", poster: "", url: ""},
+        {title: "Scarface", year: 1983, tags: "Crime, Drama", section: "movies", description: "A Cuban immigrant rises to power in Miami's criminal underworld.", poster: "", url: ""},
+        {title: "The Lion King", year: 1994, tags: "Animation, Adventure, Drama", section: "movies", description: "Simba must reclaim his kingdom after the death of his father.", poster: "", url: ""},
+        {title: "The Lion King II: Simba’s Pride", year: 1998, tags: "Animation, Adventure, Drama", section: "movies", description: "Simba’s daughter Kiara finds love while dealing with her father’s legacy.", poster: "", url: ""},
+        {title: "The Lego Batman Movie", year: 2017, tags: "Animation, Action, Comedy", section: "movies", description: "Batman faces challenges balancing hero duties and his personal ego.", poster: "", url: ""},
+        {title: "The Lego Movie", year: 2014, tags: "Animation, Adventure, Comedy", section: "movies", description: "An ordinary Lego figure becomes the key to saving the Lego universe.", poster: "", url: ""},
+        {title: "The Lego Movie Part 2", year: 2019, tags: "Animation, Adventure, Comedy", section: "movies", description: "Emmet and friends face a new threat from the Systar System.", poster: "", url: ""},
+        {title: "The Little Rascals", year: 1994, tags: "Comedy, Family", section: "movies", description: "A mischievous group of kids get into adventures and pranks.", poster: "", url: ""},
+        {title: "The Lorax", year: 2012, tags: "Animation, Adventure, Comedy", section: "movies", description: "A boy learns about the importance of nature from the Lorax.", poster: "", url: ""},
+        {title: "The Sandlot", year: 1993, tags: "Comedy, Family, Sport", section: "movies", description: "A boy moves to a new town and joins a baseball team of misfits.", poster: "", url: ""},
+        {title: "The Brave Little Toaster", year: 1987, tags: "Animation, Adventure, Family", section: "movies", description: "A group of household appliances embark on a journey to find their owner.", poster: "", url: ""},
+        {title: "The Chronicles of Narnia", year: 2005, tags: "Adventure, Family, Fantasy", section: "movies", description: "Four siblings discover a magical world inside a wardrobe.", poster: "", url: ""},
+        {title: "The Chronicles of Narnia: Prince Caspian", year: 2008, tags: "Adventure, Family, Fantasy", section: "movies", description: "The Pevensie children return to Narnia to help Prince Caspian.", poster: "", url: ""},
+        {title: "The Chronicles of Narnia: The Voyage of the Dawn Treader", year: 2010, tags: "Adventure, Family, Fantasy", section: "movies", description: "Lucy and Edmund return to Narnia with their cousin to find seven lost lords.", poster: "", url: ""},
+        {title: "The Princess Bride", year: 1987, tags: "Adventure, Comedy, Fantasy", section: "movies", description: "A classic fairy tale adventure of love and heroism.", poster: "", url: ""},
+        {title: "The Proud Family Movie", year: 2005, tags: "Animation, Comedy, Family", section: "movies", description: "Penny Proud embarks on an adventure to save her family and community.", poster: "", url: ""},
+        {title: "The Lego Ninjago Movie", year: 2017, tags: "Animation, Action, Comedy", section: "movies", description: "A young ninja fights to save his city from an evil warlord.", poster: "", url: ""},
+        {title: "The Super Mario Bros. Movie", year: 2023, tags: "Animation, Adventure, Comedy", section: "movies", description: "Mario and Luigi travel through the Mushroom Kingdom to save Princess Peach.", poster: "", url: ""},
+        {title: "The Wizard of Oz", year: 1939, tags: "Adventure, Family, Fantasy", section: "movies", description: "Dorothy is swept away to the magical land of Oz and seeks a way home.", poster: "", url: ""},
+        {title: "Return to Oz", year: 1985, tags: "Adventure, Family, Fantasy", section: "movies", description: "Dorothy returns to Oz to save it from evil forces.", poster: "", url: ""},
+        {title: "Teen Titans: Judas Contract", year: 2017, tags: "Animation, Action, Adventure", section: "movies", description: "The Teen Titans face a betrayal that threatens the team’s unity.", poster: "", url: ""},
+        {title: "Teen Titans: Trouble in Tokyo", year: 2006, tags: "Animation, Action, Adventure", section: "movies", description: "The Teen Titans travel to Tokyo to stop a mysterious villain.", poster: "", url: ""},
+        {title: "Transformers", year: 2007, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Autobots and Decepticons battle on Earth with humanity caught in the middle.", poster: "", url: ""},
+        {title: "Transformers: Revenge of The Fallen", year: 2009, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Autobots face a new threat as ancient Decepticons rise to destroy Earth.", poster: "", url: ""},
+        {title: "Transformers: Dark of The Moon", year: 2011, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Autobots uncover secrets from the past to save humanity.", poster: "", url: ""},
+        {title: "Transformers: Age of Extinction", year: 2014, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "A new generation of Transformers emerges as humanity fights to survive.", poster: "", url: ""},
+        {title: "Transformers: The Last Knight", year: 2017, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The fate of Earth rests in the hands of humans and Autobots.", poster: "", url: ""},
+        {title: "Bumblebee", year: 2018, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "A young girl discovers a transforming robot from Cybertron and helps him hide from the government.", poster: "", url: ""},
+        {title: "Transformers: Rise of The Beasts", year: 2023, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Beast Transformers join the battle on Earth in a new action-packed adventure.", poster: "", url: ""},
+        {title: "Tron", year: 1982, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "A computer programmer is transported into a digital world and must survive.", poster: "", url: ""},
+        {title: "Teenage Mutant Ninja Turtles", year: 1990, tags: "Action, Adventure, Family", section: "movies", description: "Four mutant turtles fight crime in New York City.", poster: "", url: ""},
+        {title: "Teenage Mutant Ninja Turtles 2: The Secret of The Ooze", year: 1991, tags: "Action, Adventure, Family", section: "movies", description: "The turtles battle a new villain threatening New York.", poster: "", url: ""},
+        {title: "Teenage Mutant Ninja Turtles 3", year: 1993, tags: "Action, Adventure, Family", section: "movies", description: "The turtles travel through time to save New York.", poster: "", url: ""},
+        {title: "Turning Red", year: 2022, tags: "Animation, Comedy, Family", section: "movies", description: "A young girl discovers she transforms into a giant red panda when stressed.", poster: "", url: ""},
+        {title: "Teenage Mutant Ninja Turtles: Out of The Shadows", year: 2016, tags: "Action, Adventure, Comedy", section: "movies", description: "The turtles face a new threat with the help of allies.", poster: "", url: ""},
+        {title: "Teenage Mutant Ninja Turtles: Mutant Mayhem", year: 2023, tags: "Animation, Action, Comedy", section: "movies", description: "The turtles navigate life as teenagers while fighting crime.", poster: "", url: ""},
+        {title: "TMNT", year: 2007, tags: "Animation, Action, Adventure", section: "movies", description: "The turtles face a dangerous enemy while struggling with team dynamics.", poster: "", url: ""},
+        {title: "The Good Dinosaur", year: 2015, tags: "Animation, Adventure, Family", section: "movies", description: "An Apatosaurus makes an unlikely friend on a journey to find his family.", poster: "", url: ""},
+        {title: "The Little Mermaid", year: 1989, tags: "Animation, Adventure, Family", section: "movies", description: "A mermaid princess dreams of life on land and falls in love with a human prince.", poster: "", url: ""},
+        {title: "The Brady Bunch Movie", year: 1995, tags: "Comedy, Family", section: "movies", description: "The iconic Brady family struggles to adapt to the modern world.", poster: "", url: ""},
+        {title: "A Very Brady Sequel", year: 1996, tags: "Comedy, Family", section: "movies", description: "The Brady family faces new challenges and adventures.", poster: "", url: ""},
+        {title: "The Mask", year: 1994, tags: "Action, Comedy, Fantasy", section: "movies", description: "A man discovers a mask that transforms him into a cartoonish superhero.", poster: "", url: ""},
+        {title: "The Addams Family", year: 1991, tags: "Comedy, Family, Fantasy", section: "movies", description: "The eccentric Addams family navigates life with quirky adventures.", poster: "", url: ""},
+        {title: "The Little Mermaid 2023", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "A live-action retelling of the classic story about Ariel, a mermaid who dreams of life on land.", poster: "", url: ""},
+        {title: "The Smurfs", year: 2011, tags: "Animation, Adventure, Comedy", section: "movies", description: "The Smurfs are transported from their village to New York City and must find a way home.", poster: "", url: ""},
+        {title: "The Smurfs 2", year: 2013, tags: "Animation, Adventure, Comedy", section: "movies", description: "The Smurfs team up to rescue their kidnapped friends from the evil wizard Gargamel.", poster: "", url: ""},
+        {title: "The Flash", year: 2023, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Barry Allen uses his super-speed powers to protect Central City and alter time.", poster: "", url: ""},
+        {title: "The Book of Life", year: 2014, tags: "Animation, Adventure, Fantasy", section: "movies", description: "A young man embarks on an adventure through the Land of the Remembered to win the heart of his true love.", poster: "", url: ""},
+        {title: "The Nightmare Before Christmas", year: 1993, tags: "Animation, Fantasy, Musical", section: "movies", description: "Jack Skellington, the Pumpkin King of Halloween Town, discovers Christmas Town and tries to bring the holiday to his home.", poster: "", url: ""},
+        {title: "Twilight", year: 2008, tags: "Drama, Fantasy, Romance", section: "movies", description: "A teenage girl falls in love with a mysterious vampire, Edward Cullen.", poster: "", url: ""},
+        {title: "The Twilight Saga: New Moon", year: 2009, tags: "Drama, Fantasy, Romance", section: "movies", description: "Bella struggles with Edward's departure and grows closer to her friend Jacob.", poster: "", url: ""},
+        {title: "The Twilight Saga: Eclipse", year: 2010, tags: "Drama, Fantasy, Romance", section: "movies", description: "Bella must choose between her love for Edward and her friendship with Jacob while facing a vampire threat.", poster: "", url: ""},
+        {title: "The Twilight Saga: Breaking Dawn Part 1", year: 2011, tags: "Drama, Fantasy, Romance", section: "movies", description: "Bella and Edward marry, and she faces unexpected challenges during pregnancy.", poster: "", url: ""},
+        {title: "The Twilight Saga: Breaking Dawn Part 2", year: 2012, tags: "Drama, Fantasy, Romance", section: "movies", description: "The Cullens protect their daughter from a new threat to the vampire world.", poster: "", url: ""},
+        {title: "The House With a Clock in Its Walls", year: 2018, tags: "Adventure, Comedy, Fantasy", section: "movies", description: "A young orphan helps his magical uncle uncover a hidden clock with dangerous powers.", poster: "", url: ""},
+        {title: "The Menu", year: 2022, tags: "Comedy, Horror, Thriller", section: "movies", description: "Guests at an exclusive restaurant discover the shocking secrets behind the chef's elaborate creations.", poster: "", url: ""},
+        {title: "The Swan Princess", year: 1994, tags: "Animation, Adventure, Family", section: "movies", description: "A princess is cursed to become a swan by day, and her true love must save her.", poster: "", url: ""},
+        {title: "The Princess and The Frog", year: 2009, tags: "Animation, Adventure, Family", section: "movies", description: "A hardworking waitress dreams of owning her own restaurant while navigating love and magic in New Orleans.", poster: "", url: ""},
+        {title: "Trolls Band Together", year: 2023, tags: "Animation, Adventure, Comedy", section: "movies", description: "Poppy and Branch embark on a musical adventure to unite the Trolls and stop a new threat.", poster: "", url: ""},
+        {title: "The Greatest Showman", year: 2017, tags: "Biography, Drama, Musical", section: "movies", description: "The life story of P.T. Barnum and his creation of the circus that became a worldwide sensation.", poster: "", url: ""},
+        {title: "Terrifier", year: 2016, tags: "Horror, Thriller", section: "movies", description: "A killer clown terrorizes a group of friends on Halloween night.", poster: "", url: ""},
+        {title: "Terrifier 2", year: 2022, tags: "Horror, Thriller", section: "movies", description: "Art the Clown returns to wreak havoc and terrorize a small town.", poster: "", url: ""},
+        {title: "Terrifier 3", year: 2024, tags: "Horror, Thriller", section: "movies", description: "Art the Clown escalates his horrifying spree, targeting new victims.", poster: "", url: ""},
+        {title: "Tangled", year: 2010, tags: "Animation, Adventure, Comedy", section: "movies", description: "Rapunzel, a princess with magical long hair, escapes her tower with the help of a charming thief.", poster: "", url: ""},
+        {title: "Transformers 1", year: 2007, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Autobots and Decepticons bring their war to Earth, and a young man becomes the key to saving humanity.", poster: "", url: ""},
+        {title: "The Wild Robot", year: 2016, tags: "Animation, Adventure, Family", section: "movies", description: "A robot wakes up on a remote island and learns to survive in the wilderness.", poster: "", url: ""},
+        {title: "The Green Mile", year: 1999, tags: "Crime, Drama, Fantasy", section: "movies", description: "A death row guard witnesses supernatural events surrounding an inmate with extraordinary powers.", poster: "", url: ""},
+        {title: "Us", year: 2019, tags: "Horror, Thriller", section: "movies", description: "A family is terrorized by their doppelgängers while on vacation.", poster: "", url: ""},
+        {title: "Venom", year: 2018, tags: "Action, Sci-Fi, Thriller", section: "movies", description: "A journalist becomes host to an alien symbiote that gives him superpowers.", poster: "", url: ""},
+        {title: "Venom: Let There Be Carnage", year: 2021, tags: "Action, Sci-Fi, Thriller", section: "movies", description: "Venom faces a new threat when Carnage, a deadly symbiote, emerges.", poster: "", url: ""},
+        {title: "Venom: The Last Dance", year: 2024, tags: "Action, Sci-Fi, Thriller", section: "movies", description: "Venom battles an ultimate villain in a climactic showdown.", poster: "", url: ""},
+        {title: "White Chicks", year: 2004, tags: "Comedy, Crime", section: "movies", description: "Two FBI agents go undercover as socialite sisters to solve a kidnapping case.", poster: "", url: ""},
+        {title: "Wicked", year: 2003, tags: "Musical, Fantasy, Drama", section: "movies", description: "The untold story of the witches of Oz before Dorothy's arrival.", poster: "", url: ""},
+        {title: "Wicked for Good", year: 2024, tags: "Musical, Fantasy, Drama", section: "movies", description: "The continuation of the magical tale exploring new adventures in Oz.", poster: "", url: ""},
+        {title: "Who Framed Roger Rabbit", year: 1988, tags: "Animation, Comedy, Crime", section: "movies", description: "A detective helps a cartoon rabbit clear his name in a live-action world.", poster: "", url: ""},
+        {title: "Wreck-It-Ralph", year: 2012, tags: "Animation, Adventure, Comedy", section: "movies", description: "A video game villain goes on a journey to prove he can be a hero.", poster: "", url: ""},
+        {title: "Wreck-It-Ralph Breaks The Internet", year: 2018, tags: "Animation, Adventure, Comedy", section: "movies", description: "Ralph and Vanellope venture into the vast world of the internet to save their game.", poster: "", url: ""},
+        {title: "White Men Can’t Jump (1992)", year: 1992, tags: "Comedy, Sport", section: "movies", description: "Two street basketball hustlers team up to con their way to cash and fame.", poster: "", url: ""},
+        {title: "White Men Can’t Jump (2023)", year: 2023, tags: "Comedy, Sport", section: "movies", description: "A modern retelling of two basketball hustlers teaming up for fame and fortune.", poster: "", url: ""},
+        {title: "Wish", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "A young girl makes a wish that changes the fate of her kingdom.", poster: "", url: ""},
+        {title: "West Side Story (1961)", year: 1961, tags: "Drama, Musical, Romance", section: "movies", description: "A musical retelling of Romeo and Juliet in the streets of New York City.", poster: "", url: ""},
+        {title: "West Side Story (2021)", year: 2021, tags: "Drama, Musical, Romance", section: "movies", description: "A modern remake of the classic musical with new choreography and music.", poster: "", url: ""},
+        {title: "Willy Wonka & The Chocolate Factory", year: 1971, tags: "Adventure, Family, Fantasy", section: "movies", description: "Charlie Bucket visits Willy Wonka's mysterious chocolate factory and discovers magical wonders.", poster: "", url: ""}
+    ];
+const tvShows = [
+{
+  title:"Abbott Elementary",
+  year:2021,
+  tags:"Comedy",
+  description:"Teachers working in a public school.",
+  poster:"https://m.media-amazon.com/images/I/8138HMFdVoL.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"https://drive.google.com/file/d/1SiFwITvaZ_Fnq9jQAIWzUZsYuHDkCtsE/view?usp=drive_link"}, {title:"E2", url:"#"}, {title:"E3", url:"#"}, {title:"E4", url:"#"},
+      {title:"E5", url:"#"}, {title:"E6", url:"#"}, {title:"E7", url:"#"}, {title:"E8", url:"#"},
+      {title:"E9", url:"#"}, {title:"E10", url:"#"}, {title:"E11", url:"#"}, {title:"E12", url:"#"}, {title:"E13", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},{title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"},{title:"E11", url:"#"}, {title:"E12", url:"#"}, {title:"E13", url:"#"},
+      {title:"E14", url:"#"}, {title:"E15", url:"#"}, {title:"E16", url:"#"}, {title:"E17", url:"#"}, {title:"E18", url:"#"}, {title:"E19", url:"#"},
+    ]}
+  ]
+},
+{
+  title:"Adventure Time",
+  year:2010,
+  tags:"Animation, Adventure",
+  description:"Finn and Jake go on adventures.",
+  poster:"https://m.media-amazon.com/images/I/61eML5bDDyL._AC_UF894,1000_QL80_.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Adventure Time: Fiona and Cake",
+  year:2023,
+  tags:"Animation",
+  description:"Spin-off adventure.",
+  poster:"https://resizing.flixster.com/DnUMTEgPgrwxfoRoJD_GYeK5qXo=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vZjFhM2QzNGQtZWE5NS00YTI0LWFhNmUtZTE5YmVlNmYyNjdlLmpwZw==",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Arcane",
+  year:2021,
+  tags:"Action, Animation",
+  description:"Conflict between Piltover and Zaun.",
+  poster:"https://m.media-amazon.com/images/I/61KyJNmk8BL._AC_UF894,1000_QL80_.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"The Amazing World of Gumball",
+  year:2011,
+  tags:"Comedy, Animation",
+  description:"Life of Gumball.",
+  poster:"https://resizing.flixster.com/LIBqLhU3qJ7yOsj3aKcEso9HZok=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14886922_b_v8_ab.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Batman The Animated Series",
+  year:1992,
+  tags:"Action, Animation",
+  description:"Batman fights crime in Gotham.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p183921_b_v8_aw.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Bluey",
+  year:2018,
+  tags:"Family",
+  description:"Fun adventures of Bluey.",
+  poster:"https://resizing.flixster.com/BYSYFIntX7QoiPJ3-2kIVjJb1jg=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p16766282_b_v12_ab.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Boondocks",
+  year:2005,
+  tags:"Comedy",
+  description:"Satirical animated show.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p185179_b_v8_ab.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"The Cuphead Show",
+  year:2022,
+  tags:"Animation",
+  description:"Cuphead adventures.",
+  poster:"https://resizing.flixster.com/N8hzAUrjr8G_Ns6j23xyNkIB32s=/206x305/v2/https://resizing.flixster.com/EA7igtQPXJByavPkFGkRsUkB5eI=/ems.cHJkLWVtcy1hc3NldHMvdHZzZXJpZXMvMjMyOTczYzEtNDdlMS00NDc5LTlhNmMtMjkxNTg1ZWI1ZTI1LmpwZw==",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Cobra Kai",
+  year:2018,
+  tags:"Action",
+  description:"Karate rivalry continues.",
+  poster:"https://m.media-amazon.com/images/M/MV5BYjA3NDkwNzktNjJkYi00ODNhLWFhYzQtYzk5NjU4MDM0OWZmXkEyXkFqcGc@._V1_.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Danny Phantom",
+  year:2004,
+  tags:"Action, Animation",
+  description:"Teen ghost hero.",
+  poster:"https://static0.srcdn.com/wordpress/wp-content/uploads/2023/05/danny-phantom-1.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Euphoria",
+  year:2019,
+  tags:"Drama",
+  description:"Teen life struggles.",
+  poster:"https://resizing.flixster.com/4kKjza5VxZyyZw10pPnPFeSLwfw=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p16805962_b_v12_aa.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Family Guy",
+  year:1999,
+  tags:"Comedy",
+  description:"Griffin family chaos.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p17140533_b_v13_ab.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Gravity Falls",
+  year:2012,
+  tags:"Mystery, Animation",
+  description:"Supernatural mysteries.",
+  poster:"https://resizing.flixster.com/ArG-Hg3GdrPfiH8jEjYa0QE2rJM=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p10851882_b_v8_aa.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Invincible",
+  year:2021,
+  tags:"Action, Animation",
+  description:"A young superhero story.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p19396843_b_v10_ae.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Rick and Morty",
+  year:2013,
+  tags:"Sci-Fi, Comedy",
+  description:"Crazy sci-fi adventures.",
+  poster:"https://resizing.flixster.com/gsGd4m0Fm2campmJ9ZyaYXWPS1A=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vUlRUVjEzMDE3Ni53ZWJw",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"SpongeBob SquarePants",
+  year:1999,
+  tags:"Comedy",
+  description:"Life in Bikini Bottom.",
+  poster:"https://resizing.flixster.com/2GX7JHcshUrmTDqcQLksBADbfJY=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8702523_b_v8_aa.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Squid Game",
+  year:2021,
+  tags:"Thriller",
+  description:"Deadly survival game.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p20492218_b_v8_ae.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"The Simpsons",
+  year:1989,
+  tags:"Comedy",
+  description:"Springfield family.",
+  poster:"https://resizing.flixster.com/eecrQOJEYIaUBkIZQ9YZMQ5OtD4=/ems.cHJkLWVtcy1hc3NldHMvdHZzZXJpZXMvUlRUVjU2OTE5MS53ZWJw",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"The Last of Us",
+  year:2023,
+  tags:"Drama",
+  description:"Post-apocalyptic survival.",
+  poster:"https://resizing.flixster.com/HWNDu0ljca3TxTxaVhug6OBRt3k=/ems.cHJkLWVtcy1hc3NldHMvdHZzZXJpZXMvMDQyMTM0ZWMtYWIyZS00MDJhLTk3OTgtZjU2NWM0M2RlZDIzLmpwZw==",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]},
+    {title:"S2", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+},
+{
+  title:"Teen Titans",
+  year:2003,
+  tags:"Action, Animation",
+  description:"Teen heroes fight crime.",
+  poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p186031_b_v8_am.jpg",
+  seasons:[
+    {title:"S1", url:"#", episodes:[
+      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
+      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
+      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+    ]}
+  ]
+}
+];
+
+
+// 👁️ VIEW COUNTER
+const todayKey = "views_" + new Date().toISOString().slice(0, 10);
+
+// total views
+let totalViews = localStorage.getItem("totalViews");
+totalViews = totalViews ? parseInt(totalViews) + 1 : 1;
+localStorage.setItem("totalViews", totalViews);
+
+// today's views
+let todayViews = localStorage.getItem(todayKey);
+todayViews = todayViews ? parseInt(todayViews) + 1 : 1;
+localStorage.setItem(todayKey, todayViews);
+
+// display
+document.getElementById("totalViews").textContent = totalViews;
+document.getElementById("todayViews").textContent = todayViews;
+let continueWatching = JSON.parse(localStorage.getItem("continueWatching"))||[];
+let currentItem=null;
+let featuredInterval=null;
+let featuredIndex=0;
+let fromContinueWatching=false;
+
+const sectionsDiv=document.getElementById("sections");
+const movieModal=document.getElementById("movieModal");
+const modalTitle=document.getElementById("modalTitle");
+const modalMeta=document.getElementById("modalMeta");
+const modalDesc=document.getElementById("modalDesc");
+const modalSeasons=document.getElementById("modalSeasons");
+const playBtn=document.getElementById("playBtn");
+const finishBtn=document.getElementById("finishBtn");
+const nextEpBtn=document.getElementById("nextEpBtn");
+const modalPoster=document.getElementById("modalPoster");
+
+// ----- MODAL -----
+function openModal(item, continueWatchingClick=false){
+  currentItem=item;
+  fromContinueWatching=continueWatchingClick;
+  movieModal.style.display="flex";
+  modalTitle.textContent=item.title;
+  modalMeta.textContent=item.year+" • "+item.tags;
+  modalPoster.src=item.poster;
+  modalSeasons.innerHTML="";
+  finishBtn.style.display="none";
+  nextEpBtn.style.display="none";
+
+  const cwEntry=continueWatching.find(c=>c.title===item.title);
+  let desc=item.description;
+  if(cwEntry && cwEntry.seasonEpisode) desc+="\nLast watched: "+cwEntry.seasonEpisode;
+  modalDesc.textContent=desc;
+
+  if(item.seasons && item.seasons.length){
+    playBtn.style.display="none";
+    if(fromContinueWatching){
+      nextEpBtn.style.display="inline-block";
+
+      // ===== Updated Next Episode Logic =====
+      nextEpBtn.onclick = () => {
+        let season = 0, episode = 0;
+        if(cwEntry && cwEntry.seasonIndex!==undefined && cwEntry.episodeIndex!==undefined){
+          season=cwEntry.seasonIndex; episode=cwEntry.episodeIndex+1;
+        }
+        if(episode>=item.seasons[season].episodes.length){
+          season++; episode=0;
+        }
+        if(season>=item.seasons.length){
+          alert("You finished the show!");
+          continueWatching = continueWatching.filter(c=>c.title!==item.title);
+          localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+          movieModal.style.display="none";
+          document.querySelector('.nav-links button.active').click();
+          return;
+        }
+        const ep=item.seasons[season].episodes[episode];
+        window.open(ep.url,"_blank");
+        const seasonEpisode=item.seasons[season].title+" "+ep.title;
+        const idx=continueWatching.findIndex(c=>c.title===item.title);
+        if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode};
+        else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode});
+        localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+        document.querySelector('.nav-links button.active').click();
+        movieModal.style.display="none";
+      };
+    }
+
+    item.seasons.forEach((s,sIdx)=>{
+      const sDiv=document.createElement("div"); sDiv.textContent=s.title;
+      sDiv.onclick=()=>{
+        modalSeasons.innerHTML="";
+        s.episodes.forEach((ep,eIdx)=>{
+          const epDiv=document.createElement("div"); epDiv.textContent=ep.title;
+          epDiv.onclick=()=>{
+            window.open(ep.url,"_blank");
+            const seasonEpisode=s.title+" "+ep.title;
+            const idx=continueWatching.findIndex(c=>c.title===item.title);
+            if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx};
+            else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx});
+            localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+            document.querySelector('.nav-links button.active').click();
+          };
+          modalSeasons.appendChild(epDiv);
+        });
+      };
+      modalSeasons.appendChild(sDiv);
+    });
+  } else {
+    playBtn.style.display="inline-block";
+    if(fromContinueWatching) finishBtn.style.display="inline-block";
+
+    playBtn.onclick=()=>{
+      window.open(item.url,"_blank");
+      const idx=continueWatching.findIndex(c=>c.title===item.title);
+      if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode:"Movie"};
+      else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode:"Movie"});
+      localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+      document.querySelector('.nav-links button.active').click();
+    };
+
+    // ===== Updated Finish Movie Logic =====
+    finishBtn.onclick = () => {
+      continueWatching = continueWatching.filter(c=>c.title!==item.title);
+      localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+      finishBtn.style.display="none";
+      movieModal.style.display="none";
+      document.querySelector('.nav-links button.active').click();
+    };
+  }
+}
+
+document.getElementById("closeModal").onclick=()=>movieModal.style.display="none";
+movieModal.onclick=(e)=>{if(e.target===movieModal) movieModal.style.display="none";};
+
+// ----- FEATURED -----
+function renderFeatured(tab){
+  if(featuredInterval) clearInterval(featuredInterval);
+  featuredIndex=0;
+  const list=tab==="movies"?movies:tvShows;
+  const container=document.createElement("div"); container.className="featured-container";
+  list.forEach((item,i)=>{
+    const slide=document.createElement("div"); slide.className="featured-slide "+(i===0?"visible":"hidden");
+    slide.style.backgroundImage=`url(${item.poster})`;
+    const title=document.createElement("h1"); title.textContent=item.title;
+    const tags=document.createElement("p"); tags.textContent=item.tags;
+    slide.appendChild(title); slide.appendChild(tags);
+    const infoBtn=document.createElement("button"); infoBtn.textContent="More Info"; infoBtn.className="info";
+    infoBtn.onclick=(e)=>{e.stopPropagation(); openModal(item)};
+    slide.appendChild(infoBtn);
+    container.appendChild(slide);
+  });
+  sectionsDiv.appendChild(container);
+  featuredInterval=setInterval(()=>{
+    const slides=container.querySelectorAll(".featured-slide");
+    slides[featuredIndex].classList.remove("visible"); slides[featuredIndex].classList.add("hidden");
+    featuredIndex=(featuredIndex+1)%slides.length;
+    slides[featuredIndex].classList.remove("hidden"); slides[featuredIndex].classList.add("visible");
+  },4000);
+  return list;
+}
+
+// ----- CAROUSEL -----
+function renderSection(title,list){
+  const section=document.createElement("div"); section.className="section";
+  const h2=document.createElement("h2"); h2.textContent=title;
+  const carousel=document.createElement("div"); carousel.className="carousel";
+  list.forEach(m=>{
+    const div=document.createElement("div"); div.className="carousel-item";
+    const img=document.createElement("img"); img.src=m.poster; img.alt=m.title;
+    img.onclick=()=>openModal(m);
+    div.appendChild(img); carousel.appendChild(div);
+  });
+  section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
+}
+
+// ----- CONTINUE WATCHING -----
+function renderContinueWatching(){
+  const section=document.createElement("div"); section.className="section";
+  const h2=document.createElement("h2"); h2.textContent="Continue Watching";
+  const carousel=document.createElement("div"); carousel.className="carousel";
+  continueWatching.forEach(c=>{
+    const item=movies.concat(tvShows).find(m=>m.title===c.title);
+    if(!item) return;
+    const div=document.createElement("div"); div.className="carousel-item";
+    const img=document.createElement("img"); img.src=item.poster; img.alt=item.title;
+    const span=document.createElement("span"); span.textContent=c.seasonEpisode || "Movie";
+    div.appendChild(img); div.appendChild(span);
+    div.onclick=()=>openModal(item,true);
+    carousel.appendChild(div);
+  });
+  section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
+}
+
+// ----- GENRES -----
+function renderGenres(list){
+  const genres={};
+  list.forEach(m=>{ if(!m.tags) return; m.tags.split(",").forEach(t=>{ const g=t.trim(); if(!genres[g]) genres[g]=[]; genres[g].push(m); }); });
+  for(const g in genres) if(genres[g].length>1) renderSection(g, genres[g]);
+}
+
+// ----- NAV -----
+document.querySelectorAll(".nav-links button").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".nav-links button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    sectionsDiv.innerHTML="";
+    const list=renderFeatured(btn.dataset.section);
+    renderContinueWatching();
+    renderSection("All", list);
+    renderGenres(list);
+  };
+});
+
+document.querySelector('[data-section="movies"]').click();
+});
+</script>
+</body>
+</html>
