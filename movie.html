@@ -1,97 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UMovies v67</title>
-<style>
-body { margin:0; font-family:Arial; background:#141414; color:white; }
-h2 { margin:20px; }
-.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 30px; background:#141414; position:sticky; top:0; z-index:10; }
-.nav-links button { background:none; border:none; color:white; margin:0 8px; cursor:pointer; }
-.nav-links button:hover, .nav-links button.active { color:#e50914; }
-#searchInput { padding:5px 10px; border-radius:4px; border:none; }
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
+  <style>
+    body { margin:0; font-family:Arial; background:#141414; color:white; overflow:hidden; }
 
-.logo h2 {
-  margin: 0;
-}
+    /* NETFLIX-STYLE BOOT SCREEN */
+    #boot {
+      position: fixed;
+      inset:0;
+      background:#141414;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
+      flex-direction:column;
+    }
+    .boot-text {
+      font-family: 'Helvetica', 'Arial', sans-serif;
+      font-size: 80px;
+      font-weight: bold;
+      color: #da1927;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+    .boot-text.show { opacity: 1; transform: scale(1.2); }
+    .boot-text.fadeOut { opacity: 0; transform: scale(2); }
+    #skipBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #555;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1010;
+      font-weight: bold;
+    }
+    #skipBtn:hover { background: #777; }
 
-.logo img {
-  height: 32px;
-  border-radius: 5px;
-}
+    /* HIDE MAIN SITE UNTIL BOOT FINISH */
+    #mainContent { display:none; overflow:auto; }
 
-.counter {
-  font-size: 12px;
-  color: #aaa;
-  margin-left: 10px;
-  white-space: nowrap;
-}
-.section { margin-bottom:40px; }
-.carousel { display:flex; overflow-x:auto; gap:10px; padding:0 20px; }
-.carousel::-webkit-scrollbar { display:none; }
-.carousel-item { position:relative; display:inline-block; cursor:pointer; }
-.carousel-item img { height:200px; width:130px; border-radius:5px; transition:0.3s; }
-.carousel-item img:hover { transform:scale(1.1); }
-.carousel-item span { position:absolute; bottom:5px; left:5px; font-size:12px; background:rgba(0,0,0,0.7); padding:2px 4px; border-radius:3px; }
-.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:20; }
-.modal-content { width:900px; max-width:95%; background:#111; border-radius:8px; display:flex; overflow:hidden; position:relative; }
-.modal-left { flex:1; padding:30px; display:flex; flex-direction:column; justify-content:center; }
-.modal-left h1 { font-size:32px; margin-bottom:10px; }
-.modal-left p { color:#ccc; white-space:pre-line; }
-.modal-right { width:320px; position:relative; }
-.modal-right img { width:100%; height:100%; object-fit:cover; }
-.modal-right::after { content:""; position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,0) 0%, #111 100%); }
-.modal-seasons { max-height:200px; overflow-y:auto; background:#222; padding:10px; border-radius:5px; margin-top:10px; }
-.modal-seasons div { padding:6px; cursor:pointer; }
-.modal-seasons div:hover { background:#e50914; }
-button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:pointer; }
-#playBtn { background:white; color:black; }
-#finishBtn, #nextEpBtn { background:#e50914; color:white; display:none; }
-#closeModal { position:absolute; top:10px; right:15px; font-size:30px; cursor:pointer; }
-/* Featured slideshow */
-.featured-container { position: relative; width:100%; height:500px; overflow:hidden; margin-bottom:30px; }
-.featured-slide { width:100%; height:100%; position:absolute; top:0; left:0; transition: opacity 1s ease; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:flex-end; padding:50px; box-sizing:border-box; color:white; }
-.featured-slide h1 { font-size:48px; margin:0; }
-.featured-slide p { margin:5px 0; font-size:18px; }
-.featured-slide button { margin-top:10px; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:16px; }
-.featured-slide button.play { background:white; color:black; }
-.featured-slide button.info { background:#e50914; color:white; }
-.featured-slide.hidden { opacity:0; pointer-events:none; }
-.featured-slide.visible { opacity:1; pointer-events:auto; }
-.featured-slide::after { content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 40%, rgba(20,20,20,0) 60%, rgba(20,20,20,1) 100%); z-index:1; }
-.featured-slide * { position:relative; z-index:2; }
-</style>
-
+    /* ===== Your existing styles ===== */
+    h2 { margin:20px; }
+    .navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 30px; background:#141414; position:sticky; top:0; z-index:10; }
+    .nav-links button { background:none; border:none; color:white; margin:0 8px; cursor:pointer; }
+    .nav-links button:hover, .nav-links button.active { color:#e50914; }
+    #searchInput { padding:5px 10px; border-radius:4px; border:none; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo h2 { margin: 0; }
+    .logo img { height: 32px; border-radius: 5px; }
+    /* POLISHED HORIZONTAL COUNTER */
+    .counter {
+      display: flex;
+      gap: 20px; /* space between sections */
+      align-items: center;
+      font-size: 12px;
+      color: #aaa;
+      white-space: nowrap;
+    }
+    
+    .counter-section {
+      display: flex;
+      align-items: center;
+      gap: 4px; /* space between label and value */
+    }
+    
+    .counter-section h2 {
+      font-size: 12px;
+      font-weight: normal;
+      margin: 0;
+      color: #aaa;
+    }
+    
+    .counter-section span {
+      font-weight: bold;
+      color: #fff;
+    }
+    .section { margin-bottom:40px; }
+    .carousel { display:flex; overflow-x:auto; gap:10px; padding:0 20px; }
+    .carousel::-webkit-scrollbar { display:none; }
+    .carousel-item { position:relative; display:inline-block; cursor:pointer; }
+    .carousel-item img { height:200px; width:130px; border-radius:5px; transition:0.3s; }
+    .carousel-item img:hover { transform:scale(1.1); }
+    .carousel-item span { position:absolute; bottom:5px; left:5px; font-size:12px; background:rgba(0,0,0,0.7); padding:2px 4px; border-radius:3px; }
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:20; }
+    .modal-content { width:900px; max-width:95%; background:#111; border-radius:8px; display:flex; overflow:hidden; position:relative; }
+    .modal-left { flex:1; padding:30px; display:flex; flex-direction:column; justify-content:center; }
+    .modal-left h1 { font-size:32px; margin-bottom:10px; }
+    .modal-left p { color:#ccc; white-space:pre-line; }
+    .modal-right { width:320px; position:relative; }
+    .modal-right img { width:100%; height:100%; object-fit:cover; }
+    .modal-right::after { content:""; position:absolute; inset:0; background:linear-gradient(to left, rgba(0,0,0,0) 0%, #111 100%); }
+    .modal-seasons { max-height:200px; overflow-y:auto; background:#222; padding:10px; border-radius:5px; margin-top:10px; }
+    .modal-seasons div { padding:6px; cursor:pointer; }
+    .modal-seasons div:hover { background:#e50914; }
+    button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:pointer; }
+    #playBtn { background:white; color:black; }
+    #finishBtn, #nextEpBtn { background:#e50914; color:white; display:none; }
+    #closeModal { position:absolute; top:10px; right:15px; font-size:30px; cursor:pointer; }
+    .featured-container { position: relative; width:100%; height:500px; overflow:hidden; margin-bottom:30px; }
+    .featured-slide { width:100%; height:100%; position:absolute; top:0; left:0; transition: opacity 1s ease; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:flex-end; padding:50px; box-sizing:border-box; color:white; }
+    .featured-slide h1 { font-size:48px; margin:0; }
+    .featured-slide p { margin:5px 0; font-size:18px; }
+    .featured-slide button { margin-top:10px; padding:12px 20px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:16px; }
+    .featured-slide button.play { background:white; color:black; }
+    .featured-slide button.info { background:#e50914; color:white; }
+    .featured-slide.hidden { opacity:0; pointer-events:none; }
+    .featured-slide.visible { opacity:1; pointer-events:auto; }
+    .featured-slide::after { content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 40%, rgba(20,20,20,0) 60%, rgba(20,20,20,1) 100%); z-index:1; }
+    .featured-slide * { position:relative; z-index:2; }
+  </style>
 </head>
+
 <body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <img src="https://iili.io/BGuIvK7.png">
+  <button id="skipBtn">Skip</button>
+</div>
+
+<!-- MAIN SITE -->
+<div id="mainContent">
+
 <div class="navbar">
   <div class="logo">
-    <img src="https://iili.io/B7PN5gI.png">
+    <img src="https://iili.io/BGuIvK7.png">
     <h2>Version 5</h2>
-
-    <!-- 👇 COUNTER + BATTERY -->
     <div class="counter">
-      <h2>Visits:</h2> 
-      <span id="totalViews">0</span> total •
-      <span id="todayViews">0</span> today •
-      <h2>Battery:</h2>
-      🔋 <span id="batteryLevel">Loading...</span>
+      <div class="counter-section">
+        <h2>Visits:</h2>
+        <span id="totalViews">0</span> total •
+        <span id="todayViews">0</span> today
+      </div>
+      <div class="counter-section">
+        <h2>Battery:</h2>
+        🔋 <span id="batteryLevel">Loading...</span>
+      </div>
     </div>
   </div>
-
   <div class="nav-links">
     <button data-section="movies">Movies</button>
     <button data-section="tv">TV Shows</button>
     <button id="siteBtn">Go to Site</button>
   </div>  
-
   <input id="searchInput" placeholder="Search">
 </div>
 
@@ -116,6 +176,28 @@ button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:p
 </div>
 
 <script>
+  // Boot Screen
+  const bootText = document.getElementById('bootText');
+  const boot = document.getElementById('boot');
+  const main = document.getElementById('mainContent');
+  const skipBtn = document.getElementById('skipBtn');
+
+  setTimeout(() => bootText.classList.add('show'), 100);
+  const bootDuration = 3000;
+  let bootTimeout = setTimeout(() => bootText.classList.add('fadeOut'), bootDuration);
+  let hideTimeout = setTimeout(() => {
+    boot.style.display = 'none';
+    main.style.display = 'block';
+    document.body.style.overflow = 'auto';
+  }, bootDuration + 800);
+  skipBtn.onclick = () => {
+    clearTimeout(bootTimeout);
+    clearTimeout(hideTimeout);
+    boot.style.display = 'none';
+    main.style.display = 'block';
+    document.body.style.overflow = 'auto';
+  };
+
   // -------- OPTION 2 BUTTON (JS) --------
   document.getElementById("siteBtn").addEventListener("click", () => {
     window.open("https://youtube.com", "_blank");
@@ -128,7 +210,6 @@ button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:p
         let percent = Math.round(battery.level * 100);
         document.getElementById("batteryLevel").textContent = percent + "%";
       }
-
       updateBattery();
       battery.addEventListener("levelchange", updateBattery);
     });
@@ -139,6 +220,60 @@ button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:p
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const movies = [];
+  const tvShows = [];
+
+  // 👁️ VIEW COUNTER
+  const todayKey = "views_" + new Date().toISOString().slice(0, 10);
+  let totalViews = localStorage.getItem("totalViews");
+  totalViews = totalViews ? parseInt(totalViews) + 1 : 1;
+  localStorage.setItem("totalViews", totalViews);
+  let todayViews = localStorage.getItem(todayKey);
+  todayViews = todayViews ? parseInt(todayViews) + 1 : 1;
+  localStorage.setItem(todayKey, todayViews);
+  document.getElementById("totalViews").textContent = totalViews;
+  document.getElementById("todayViews").textContent = todayViews;
+
+  let continueWatching = JSON.parse(localStorage.getItem("continueWatching"))||[];
+  let currentItem=null;
+  let featuredInterval=null;
+  let featuredIndex=0;
+  let fromContinueWatching=false;
+
+  const sectionsDiv=document.getElementById("sections");
+  const movieModal=document.getElementById("movieModal");
+  const modalTitle=document.getElementById("modalTitle");
+  const modalMeta=document.getElementById("modalMeta");
+  const modalDesc=document.getElementById("modalDesc");
+  const modalSeasons=document.getElementById("modalSeasons");
+  const playBtn=document.getElementById("playBtn");
+  const finishBtn=document.getElementById("finishBtn");
+  const nextEpBtn=document.getElementById("nextEpBtn");
+  const modalPoster=document.getElementById("modalPoster");
+  <script>
+    // -------- OPTION 2 BUTTON (JS) --------
+    document.getElementById("siteBtn").addEventListener("click", () => {
+      window.open("https://youtube.com", "_blank");
+    });
+  
+    // -------- BATTERY API --------
+    if ('getBattery' in navigator) {
+      navigator.getBattery().then(battery => {
+        function updateBattery() {
+          let percent = Math.round(battery.level * 100);
+          document.getElementById("batteryLevel").textContent = percent + "%";
+        }
+  
+        updateBattery();
+        battery.addEventListener("levelchange", updateBattery);
+      });
+    } else {
+      document.getElementById("batteryLevel").textContent = "Not supported";
+    }
+  </script>
+  
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
   const movies = [
         {title: "Avengers Endgame", year: 2019, tags: "Action, Adventure, Superhero", section: "movies", description: "The Avengers assemble for a final stand against Thanos to save the universe.", poster: "https://resizing.flixster.com/fC7nU6iTRQk02tS0SDS1ylx-G34=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2QxZjE5ZDgzLTRiY2MtNDFkYS04NWQ4LTRkYzc1ZTAwNWE2NC53ZWJw", url: "https://drive.google.com/file/d/1ehi9tidOYHb1RMldxtBw6-L3UhyEKVm9/view"},
         {title: "Ant-Man and The Wasp: Quantumania", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "Scott Lang and Hope Van Dyne explore the Quantum Realm while facing Kang the Conqueror.", poster: "https://resizing.flixster.com/_0Mhf0W_vdhwlaqOaUDX6JiReKA=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzE0OGY2MTIxLTE1MDEtNDI5YS1hYzVlLWYyMzExYjBmZTlhMC5qcGc=", url: "https://drive.google.com/file/d/1AW3Zm8256tzZ-37lmgYmIGse4knu8IdA/view"},
@@ -179,63 +314,43 @@ document.addEventListener("DOMContentLoaded", () => {
         {title: "Cars", year: 2006, tags: "Animation, Adventure, Comedy", section: "movies", description: "Lightning McQueen finds friendship and life lessons in a small town.", poster: "https://m.media-amazon.com/images/M/MV5BOTUxNTMzNGQtMTRiOC00MmY4LWI0MzQtMzc3OTdkMzJiODg4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1RoWQ2LZecPYvsZ48Sah7_xBvZzEHcXL1/view?usp=drive_link"},
         {title: "Cars 2", year: 2011, tags: "Animation, Adventure, Comedy", section: "movies", description: "Lightning McQueen competes in a world grand prix while Mater gets involved in espionage.", poster: "https://m.media-amazon.com/images/M/MV5BMTUzNTc3MTU3M15BMl5BanBnXkFtZTcwMzIxNTc3NA@@._V1_.jpg", url: "https://drive.google.com/file/d/1YinG1kmgSqWI5kQwfDsQO6vK1xzM6K7o/view?usp=drive_link"},
         {title: "Child's Play", year: 1988, tags: "Horror, Thriller", section: "movies", description: "A doll possessed by a serial killer terrorizes a family.", poster: "https://m.media-amazon.com/images/M/MV5BOTc2M2FjMDMtYzBmNS00ODMxLWJjOTYtZmNkMDYxMTU5ZTBhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg", url: "https://drive.google.com/file/d/1FPO2K8Oqb1O3qm1qb57NhZHhaGCvQjAz/view?usp=sharing"},
-        {title: "Child's Play 2", year: 1990, tags: "Horror, Thriller", section: "movies", description: "Chucky returns to continue his murderous spree.", poster: "https://m.media-amazon.com/images/M/MV5BNmQ5ZWRhZmMtOWI0OC00OWMzLWIwNzgtMzYzNjNhZDEwNTE1XkEyXkFqcGc@._V1_.jpg", url: "https://drive.google.com/file/d/1NXrR22Ja1iaa3PcidheWe6dKmK80A2em/view?usp=drive_link"},
-        {title: "Child's Play (2019)", year: 2019, tags: "Horror, Thriller", section: "movies", description: "A reboot where a high-tech doll becomes dangerously homicidal.", poster: "https://m.media-amazon.com/images/M/MV5BNzMwZTNkYzktM2EwYS00ZGZlLWJhNmQtZWNhMTBlMDUzOWRkXkEyXkFqcGc@._V1_.jpg", url: "https://m.media-amazon.com/images/M/MV5BNzMwZTNkYzktM2EwYS00ZGZlLWJhNmQtZWNhMTBlMDUzOWRkXkEyXkFqcGc@._V1_.jpg"},
-        {title: "Corpse Bride", year: 2005, tags: "Animation, Fantasy, Romance", section: "movies", description: "A man accidentally marries a corpse while rehearsing his wedding vows.", poster: "https://m.media-amazon.com/images/M/MV5BMTk1MTY1NjU4MF5BMl5BanBnXkFtZTcwNjIzMTEzMw@@._V1_.jpg", url: "https://drive.google.com/file/d/1AHqrYm4cItyiEquPHJV5z3H81Cc0cCfI/view?usp=sharing"},
         {title: "Captain Underpants", year: 2017, tags: "Animation, Comedy, Adventure", section: "movies", description: "Two kids hypnotize their principal into becoming a superhero.", poster: "https://m.media-amazon.com/images/I/81FkW4V668L._AC_UF1000,1000_QL80_.jpg", url: "https://drive.google.com/file/d/1BW7yv_y4uk99Nsjbc--z1beQ_bYYmUXk/view?usp=share_link"},
-        {title: "Seed of Chucky", year: 2004, tags: "Horror, Comedy", section: "movies", description: "Chucky's child comes to life and continues the family tradition of murder.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Curse of Chucky", year: 2013, tags: "Horror, Thriller", section: "movies", description: "Chucky terrorizes a family after being delivered anonymously.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Cult of Chucky", year: 2017, tags: "Horror, Thriller", section: "movies", description: "Chucky returns in a mental institution, causing chaos.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Child's Play 3", year: 1991, tags: "Horror, Thriller", section: "movies", description: "Chucky continues his murderous quest at a military academy.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Coat of Many Colors", year: 2015, tags: "Drama, Biography, Family", section: "movies", description: "The story of Dolly Parton's childhood and the coat she cherished.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Circle of Love", year: 2010, tags: "Romance, Drama", section: "movies", description: "A romantic story about love, friendship, and family.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "The Conjuring", year: 2013, tags: "Horror, Thriller, Mystery", section: "movies", description: "Paranormal investigators help a family terrorized by a dark presence.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Detective Pikachu", year: 2019, tags: "Adventure, Family, Mystery", section: "movies", description: "A young man teams up with a talking Pikachu to solve a missing person case.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Diary Of A Wimpy Kid: Rodrick Rules", year: 2011, tags: "Comedy, Family", section: "movies", description: "Greg deals with his older brother's antics during the summer and school year.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Diary of a Wimpy Kid: Dog Days", year: 2012, tags: "Comedy, Family", section: "movies", description: "Greg navigates summer vacation with his friends and family.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "DND: Honor Among Thieves", year: 2023, tags: "Action, Adventure, Fantasy", section: "movies", description: "A charming thief and his companions go on an epic Dungeons & Dragons adventure.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Despicable Me", year: 2010, tags: "Animation, Comedy, Family", section: "movies", description: "Gru plans the biggest heist in history but meets three orphaned girls who change him.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Despicable Me 2", year: 2013, tags: "Animation, Comedy, Family", section: "movies", description: "Gru teams up with the Anti-Villain League to stop a new criminal.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Despicable Me 3", year: 2017, tags: "Animation, Comedy, Family", section: "movies", description: "Gru reunites with his long-lost twin brother while facing a new villain.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Despicable Me 4", year: 2024, tags: "Animation, Comedy, Family", section: "movies", description: "Gru and the Minions return for another adventure filled with laughs and action.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Descendants: The Rise of Red", year: 2022, tags: "Musical, Fantasy, Family", section: "movies", description: "The children of Disney villains embark on a journey to change their destinies.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Deadpool", year: 2016, tags: "Action, Comedy, Superhero", section: "movies", description: "Mercenary Wade Wilson becomes Deadpool and seeks revenge while breaking the fourth wall.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Deadpool 2", year: 2018, tags: "Action, Comedy, Superhero", section: "movies", description: "Deadpool forms X-Force to protect a young mutant from a time-traveling soldier.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Deadpool and Wolverine", year: 2017, tags: "Action, Comedy, Superhero", section: "movies", description: "An animated short featuring Deadpool and Wolverine's chaotic teamwork.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Dune: Part Two", year: 2024, tags: "Adventure, Sci-Fi, Drama", section: "movies", description: "Paul Atreides continues his journey to avenge his family and reclaim Arrakis.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Dogman", year: 2023, tags: "Drama, Crime", section: "movies", description: "A dog groomer is drawn into a criminal underworld, testing morality and loyalty.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "The Mighty Ducks", year: 1992, tags: "Family, Sport, Comedy", section: "movies", description: "A lawyer coaches a youth hockey team, teaching them teamwork and courage.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "D2: The Mighty Ducks", year: 1994, tags: "Family, Sport, Comedy", section: "movies", description: "The Ducks compete in the Junior Goodwill Games, facing tough opponents.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Elf", year: 2003, tags: "Comedy, Family, Fantasy", section: "movies", description: "A human raised by elves travels to New York to find his real father.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Evil Dead", year: 1981, tags: "Horror, Thriller", section: "movies", description: "A group of friends awaken demons in a remote cabin, facing terrifying consequences.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Evil Dead II", year: 1987, tags: "Horror, Comedy", section: "movies", description: "Ash continues to fight the undead in a darkly comedic and gory battle.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "8 Mile", year: 2002, tags: "Drama, Music", section: "movies", description: "A young rapper struggles to escape his life in Detroit while pursuing his dream.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Free Guy", year: 2021, tags: "Action, Comedy, Sci-Fi", section: "movies", description: "A video game NPC becomes self-aware and decides to become the hero of his story.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday", year: 1995, tags: "Comedy, Drama", section: "movies", description: "Two friends navigate a day of comedic misadventures in their neighborhood.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Finding Nemo", year: 2003, tags: "Animation, Adventure, Family", section: "movies", description: "A clownfish crosses the ocean to rescue his son with the help of new friends.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th", year: 1980, tags: "Horror, Slasher", section: "movies", description: "Camp counselors are stalked by a mysterious killer at Camp Crystal Lake.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part 2", year: 1981, tags: "Horror, Slasher", section: "movies", description: "A new group of counselors faces the wrath of Jason Voorhees.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part 3", year: 1982, tags: "Horror, Slasher", section: "movies", description: "Jason dons his iconic hockey mask and terrorizes more victims.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th: The Final Chapter", year: 1984, tags: "Horror, Slasher", section: "movies", description: "Jason continues his murderous rampage while survivors try to fight back.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part V: A New Beginning", year: 1985, tags: "Horror, Slasher", section: "movies", description: "A troubled teen faces the return of Jason in a new killing spree.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part VI: Jason Lives", year: 1986, tags: "Horror, Slasher", section: "movies", description: "Jason is resurrected and continues his deadly quest.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part VII: The New Blood", year: 1988, tags: "Horror, Slasher", section: "movies", description: "A telekinetic girl faces off against the unstoppable Jason Voorhees.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Friday the 13th Part VIII: Jason Takes Manhattan", year: 1989, tags: "Horror, Slasher", section: "movies", description: "Jason terrorizes a cruise ship and later New York City.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "The Final Friday", year: 1994, tags: "Horror, Slasher", section: "movies", description: "Jason returns in a final showdown against his victims.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Jason X", year: 2001, tags: "Horror, Sci-Fi", section: "movies", description: "Jason Voorhees is frozen and wakes up in the future aboard a spaceship.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "FNAF", year: 2023, tags: "Horror, Thriller", section: "movies", description: "Animatronics terrorize a security guard in a dark, twisted story.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "FNAF 2", year: 2025, tags: "Horror, Thriller", section: "movies", description: "The terrifying events continue in a new night at Freddy Fazbear’s Pizza.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Frozen", year: 2013, tags: "Animation, Adventure, Family", section: "movies", description: "Princess Anna sets out to find her sister Elsa whose icy powers have trapped the kingdom in eternal winter.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Frozen 2", year: 2019, tags: "Animation, Adventure, Family", section: "movies", description: "Elsa and Anna journey to discover the origin of Elsa's powers.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Gran Turismo", year: 2023, tags: "Action, Drama, Sport", section: "movies", description: "A young gamer turns into a professional race car driver.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Guardians of the Galaxy Vol. 3", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "The Guardians face new threats and deal with Rocket's past.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Good Burger", year: 1997, tags: "Comedy, Family", section: "movies", description: "Two friends navigate the challenges of working at a fast-food restaurant.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Good Burger 2", year: 2024, tags: "Comedy, Family", section: "movies", description: "The duo returns for another fast-food adventure.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Ghostbusters", year: 1984, tags: "Comedy, Fantasy, Sci-Fi", section: "movies", description: "A team of parapsychologists starts a ghost-catching business in New York City.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Grease", year: 1978, tags: "Musical, Romance, Comedy", section: "movies", description: "Teen love blossoms during a summer romance at Rydell High.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Garfield", year: 2004, tags: "Comedy, Family", section: "movies", description: "The lasagna-loving cat gets into hilarious adventures in the human world.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Get Out", year: 2017, tags: "Horror, Thriller, Mystery", section: "movies", description: "A young African-American man uncovers horrifying secrets while visiting his girlfriend’s family.", poster: "POSTER_URL", url: "LINK_URL"},
-        {title: "Garfield 2004", year: 2004, tags: "Comedy, Family", section: "movies", description: "Garfield navigates life in a world of humans, causing chaos and laughter.", poster: "POSTER_URL", url: "LINK_URL"},
+        {title: "Detective Pikachu", year: 2019, tags: "Adventure, Family, Mystery", section: "movies", description: "A young man teams up with a talking Pikachu to solve a missing person case.", poster: "https://resizing.flixster.com/VgKc64us5DiS_9AnA42bMkT-NCo=/206x305/v2/https://resizing.flixster.com/b8hhpPqb9g717NcmddPVQsgnEYs=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzNjODBkMzQxLWEyMTMtNDEyMi05Yjc4LWQxZjIwMGVhMDIwNi53ZWJw", url: "https://drive.google.com/file/d/1q5wcbuy536XQKTBAF7ImApMAlNMVHM5T/view"},
+        {title: "Diary Of A Wimpy Kid: Rodrick Rules", year: 2011, tags: "Comedy, Family", section: "movies", description: "Greg deals with his older brother's antics during the summer and school year.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8395384_p_v10_ah.jpg", url: "https://drive.google.com/file/d/1rKRsgdNioFs3rtkZai7Gz97FtAX0jdJ_/view"},
+        {title: "Diary of a Wimpy Kid: Dog Days", year: 2012, tags: "Comedy, Family", section: "movies", description: "Greg navigates summer vacation with his friends and family.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p9047877_p_v10_ao.jpg", url: "https://drive.google.com/file/d/0B6fv-OkwXRTzZ090UHlWcHY2dkk/view?usp=drivesdk&resourcekey=0-TgoMzBEyMorySYhDqB9uGA"},
+        {title: "DND: Honor Among Thieves", year: 2023, tags: "Action, Adventure, Fantasy", section: "movies", description: "A charming thief and his companions go on an epic Dungeons & Dragons adventure.", poster: "https://resizing.flixster.com/eWLvyboOEGZRS2JiBDZ6eRD4Hps=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzU2MTc5YzE5LTc3YjktNDIyMS05ZWZhLTNlNzBjZmZkM2JlMS5qcGc=", url: "https://drive.google.com/file/d/1iX6QbaV3Oi_yGDvqRcFvrJ4_gzIOisnT/view"},
+        {title: "Descendants: The Rise of Red", year: 2022, tags: "Musical, Fantasy, Family", section: "movies", description: "The children of Disney villains embark on a journey to change their destinies.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUKQVUvIPJOFOv-NhhRzLGMt-MgSvZBPT4pMV7W4AmUFeehpof:https://resizing.flixster.com/vIqAQfKli36Ob__ueHvtATqWPhY%3D/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzMwMjBiMDg4LWU0YmEtNDBjMy1hNDJmLWZjMWQ0MzBiMjMzZi5qcGc%3D&s", url: "https://drive.google.com/file/d/14uIYHn4xepm1GLF2USxyBkUE6nQfueoE/view?usp=sharing"},
+        {title: "Deadpool", year: 2016, tags: "Action, Comedy, Superhero", section: "movies", description: "Mercenary Wade Wilson becomes Deadpool and seeks revenge while breaking the fourth wall.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNLVwhThSHOcn36SObCi_x-CeOtj4Eejz3VNmDf-f5iwv5eNk:https://resizing.flixster.com/JK6oR_ocrhYq1fFi1fTmVhdDtR4%3D/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzg3NGEwM2NkLTI2N2QtNDk4ZS05OGY5LWU0MmQ5NzAyZGJmMC53ZWJw&s", url: "https://drive.google.com/file/d/1XUjU4fhDH7qpPEg_me8vlMba1uelRIwj/view?usp=gmail"},
+        {title: "Deadpool 2", year: 2018, tags: "Action, Comedy, Superhero", section: "movies", description: "Deadpool forms X-Force to protect a young mutant from a time-traveling soldier.", poster: "https://resizing.flixster.com/ZKG2zsBTYwJKVqFfEOot8rS-GOo=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2NiZDFiYTE4LTdlOWQtNDBjNS1hZThlLWRlYWEzOTI3ZWNjMC53ZWJw", url: "https://drive.google.com/file/d/1wcE3D19t54BnWtLNl5cruklfPVPh92nY/view?usp=gmail"},
+        {title: "Deadpool and Wolverine", year: 2017, tags: "Action, Comedy, Superhero", section: "movies", description: "An animated short featuring Deadpool and Wolverine's chaotic teamwork.", poster: "https://resizing.flixster.com/mPJp85eApHd8ih9XF5E9d3-2LbM=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzUxODlkZDE1LTQyYjUtNDg5ZS05NjZmLWMxZDk1YWZhN2E1ZC5qcGc=", url: "https://drive.google.com/file/d/1B_eiKUt7N5OxyUN9c37LG0pxcErP4yJ6/view?usp=drive_link"},
+        {title: "Dune: Part Two", year: 2024, tags: "Adventure, Sci-Fi, Drama", section: "movies", description: "Paul Atreides continues his journey to avenge his family and reclaim Arrakis.", poster: "https://resizing.flixster.com/PgHhmCKS3hR6GUsVNlC-vZ9d90I=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzZhOTA0OTIzLTEwNDctNDhkNS1iNTc3LTY3MjBmNDc5OGU1Mi5qcGc=", url: "https://drive.google.com/file/d/14VeNSqVtt5gcibZOfjPcjkBoasPrpiEG/view?usp=drive_link"},
+        {title: "The Mighty Ducks", year: 1992, tags: "Family, Sport, Comedy", section: "movies", description: "A lawyer coaches a youth hockey team, teaching them teamwork and courage.", poster: "https://resizing.flixster.com/jJTE8TYKqKcSq2CBH5gFdzuZbMA=/fit-in/352x330/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14264_p_v10_aa.jpg", url: "https://drive.google.com/file/d/1MKL3dbjVCDH4cmnPtBoT8SeQeoK8bRYN/view?usp=drive_link"},
+        {title: "D2: The Mighty Ducks", year: 1994, tags: "Family, Sport, Comedy", section: "movies", description: "The Ducks compete in the Junior Goodwill Games, facing tough opponents.", poster: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUTEhMWFhUXGRoaGRgYFx0dGhgfGhoYHR0aHxgYHSggGholHRcXIjEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OGhAQGy0lICUtLS0vLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tN//AABEIAREAuAMBIgACEQEDEQH/xAAcAAACAgMBAQAAAAAAAAAAAAAFBgQHAAIDAQj/xABEEAACAQIEAwUFBgMGBQQDAAABAgMAEQQSITEFBkETIlFhcQcygZGhFCNCUrHRYsHwM0NTcpPhFReCkvEWc6LSJGOD/8QAGgEAAwEBAQEAAAAAAAAAAAAAAQIDBAAFBv/EACkRAAICAQQBBAICAwEAAAAAAAABAhEDBBIhMUEFE1FhFCIycSOB8RX/2gAMAwEAAhEDEQA/ALD5onEGEZpGvnIBvtbrYVUXtFxEbzmSHVBGigjyXeuUGIxGIhMTSOy5g1mN7HxF/wBKlTcOv3VF1FgfPy86y1yaExF5fkH2jtJNct9PPpTZxTFmQ+lrCoPF+D9gWCjf3fPyHmK24JhGZ1Rtb94/PWoZP2e49TDN48Th4YQxUHZpc+F/jQXjsQOHew8D8RvTFzDYsEA0UXb+VD8VgS2GY30vkX101Plc12KVTPLyCfyzxA4fEI+yk5W9Dv8ALejftI4ZkmWce7KLH/MvX4i1BeI8Ny3GdWtvkNx9Kd4pkxvCwrMomQW1OuaPY/8AUtbG+dxNcqitFSpXEcMyERlSDYG3qLjbyorgsA6hZHjZQxsmZSMxG9r+F6srkrlpUzSyANK2tzsvkP3rt/Jpw6d5Bz5fZXw0BXrEmnUWHUVLZLak6DqdqBzYUBrjQ+I0NdsdIWVQxvb6+Z86beVloOVT4JGK4vCiu+fMVUtYdbC9hXzq7SYvFFmPflck36XP8hX0FBhQRtSXjuEQYfGfaCim+lr2AY/iF+tJPK1FsZ6BWqfHkT+M8CyqIYx8fPxpUMLBsp0INjVhcf47ErkgWPnSc8naSGS1r1DBknX7CanHj3fqx+9mfMWJ+0x4WTK8eRznYd9VCnS/XWw1oR7WONvNiWi7Q9lGQFS+l7am3U135AkvPLJ/hxZQf8zD+QpJ45izJPI/izfrVIRudmebqJAJr6s5VOXBQi50jQ/MV8p19LcnyFMMkTMCwRb/ACps3SExcs7cbwb37eDSVR3h0lHgR4+BpBxWB7USyRAszEsY1NnXxUKdG/Wn7HYxoxddT4dDSNzNMjN9ow91k/vEI0b+IVCLLzXApRiNyQrHMu6tdXXyy/yrK04yoxP30ZyzqNRsxt1v1rKvSZmuhr5aeN0bJcMDZlIsy+oo9BABvv8AoP2pb5dlVQJtQrBYVLEksEveRj11uBW3MfMsIQwq7Kz++QO8F8B4Xqcu6RojB0pMG8Z4o2InK4cZgpy5ugAOu3Vj4VOKTwsBGl5JLF2toijZB4afGgkPMRhV1waIsaoCzMDnN9N/GjeI4k+GjIlk7RmsbX202pMkaVlFmUlXwYRZhc3udfFmOw9P2qVjpEFoRayA3HS+UlvrpQ3gyM7faJenuDoPO1DePYgokjjdrj50mCLVWZskgLyVEGxSA2sW6i4sb7jqKuzgXLcMC2jw6ZiTew387npVH8qYrJNmOyj+v1r6U4JKzYVHuQTGoFt777+grRlf77fAsHSsicb4HFJhkimjBYEsoG6abg9K5YLDqiDyAqXHPZg2/jfqKGcRxuQlSCB+E9CKo4V0bdJku4kbGSDNXLEubDTSumEg7Q3vp4/11oxLErp2VrAe4fAjxPn1rlE15NTCDUSHw2xFjQvmXlhMY0cbuUUHMSBqbaAeQ1rrDP2TkMbEHbrR/DPdCSvfa1r9B+5oKLbJ6jIoxbXk+f8AnThfY4poXDBk0JJuCPwkHqLUCkf8I1t0FfS/M3A8LKydtBHI6gKCwubnXXyqqebcBGYHVI1TI17ILdfKguODzXJtWBOXcSIcJK5OrXNr+AsPrSWTUrFYJ0UNqUbZht6HwNRKqlRNuzphoyzqo3LAfMgV9D8ThMUihDYiNRcdbAC9UVyrhRJiogfdDqxPof1vV8cUftJVswAI67n4VHN4RXF5YPn4y6f2iBvO360J4jjcNLrqjjr09LeFG8dCQv4bDp40l8WdbnKpBB8xUlErKRAnwgZu7bTqKytosWDovxrKbklR141jlhYxQnPk7qKB3Yx/M0CwvCJj948hQMb3Nsx87GpWMnylVUoua92caDS/Tqa45u0BY4osEGuRLWA8L0cabVo06iSVRfgzi5aISQ5mlDquUnKCDfUG3wojBgjPJmk2BuRQXDpDOZFRJC+QsJHNzca9NBTHg5V+zxMgt2igsf4uo+dDUtqHBlx02yRicQAptodl8hQfjGGebDkKLsGFh4gCu2Ja58hUqQWCr4KPjes+PI4pHSjbF3g+AKQvI6gF2CISNdNWI/S9fQHK0xHDoGY27oGo33At61WuF5fkxTxhRYWsb7KWOv0Aq08fhyrwwqPuoYxtsWtYfIa/GtEJ+5KwRh8nONNBXQ6i1r1uqeOnhWt+g3raRToVZeduHqxU4lQVJBFjoRv0rtiObsFGGLTgZSA3dOhYXHzAPypG5rhAxPGRlXSGK2g07y6jwpZxXaDte0dA/bYfvW7o0axI8B1pdwzRe/DsZHMiSoQysLq1tx8ReiWCs0y32GvyqDwdLwxsZElOUd+MWRz1KgaAeVEsEn3oI6XuPQURbfQu8fx5OIdfy2PxFqQ+Nyffup919betNfGFP2h7iwcmx+tLHMMBYXA1AuPhuKhXJV9CxwlQjtE4DI2hB1B+Fb4rlbDBtnUHYq2g+ddVjzgOPeXeige62PwpnZNdAzhvAo4WV0YkA313NulOHEeb2yWRVQ2sW6+g8KR+McQ7PuLbOdddlHif2ofh+GzTp2lu0HTO+UN6INx60HC+WMpUduK824lmZYpNF1zA0KfibNrNNJJ4hTa/q1c5xJnKPEsRCMAFWwP1Nz51xjijkFkYq9vdc6MfJvHyNUikdJtoYOEKE7RB+F9PGxFxc+hrKjYBiHN9CUQnxuLg/oKyozjyFS4OWIxAkQErmAIJHj4i9dYMRIASojjUfgI0I82v4eFDOFT95lJ7pvb+VFsGQqg9koZfellOYA+KLtXJbeDTJe5Uq5O8ccsiasVQ6XVcqeioO9IfkKLcLhBw5XMC0bN4EgA6BraA2qOiswzyF17urk/eOPBEH9kp021PlQp8c0L5tAGsrRAd2NQO6CRu/jTSjvVGdvawlh0LuFtud+lE3HeJ3Fzp/W1SuDYbJHnWxvop9f5VK4fw3NKijVSwJ8gDrfyrBkg4u4jx+yz+AYKKGKPYDKuUNuSQCTbqbmpRJYtr139f22pewpeXEmQKUiGgJ3a2gsPwj0o7GjH3a16XHth0dnjtfZriG6Ule0jjOIwyYf7PKIjJKyszAHQLfr0vTxidLA7iq99oz4aeXCYeWaJGWbtHjkJsUYWsSBa5tsa0sgkI0fNuImGLZxFm7FQzCMfeFXAzG+9/lRLB4rE4mSWSPDQSRI6rLD2YtbsyRISTe4sbWrOZ48JPiX+xYmCKIwiORGRkESxm5K6WN+lQ2wkK/epxBBhGluWCOJi6xkBGjGtiOp0pGUQ0+zLmDE4uaOFXyw4aN2mAVQHJchFAtoB5edWjh7JID8/jVNco/Z8BicJOMZBaZZFmUFiGVm7p0FlI038KuORPiDsf508eicuGQOauFqR3RZhqvr4VXfFnIIO35h4H/ercxGWWKz7jTzBGxFIHHcIDfN/3ePr4GpsZdCVHh8r3HuvQzjfFBC6xomd92AOoH70xSwhQdRlGtxra2vSq/wCJzZmMwXIZDcEfhA0Gv5j1poq2LJpA7isxJ1cMz95rbDwX4U88AyiIhWdrBTlYaLpeynqDSZiMSLL2qhwfxWysLeY3otwnjS9myNMyKiEKLDMb7MD+ZddOornfTDSq0E5HhltHIWftjeNctmiA00PTrSrx3gzYdtwyE2DDp5MOho1/w+ebFRyE5AAGVnNiwTrl310+dNKcMV4mEyJml1kKagnowPiKDdHJWhAwWOJCsx70eh/iQn9QayuLYRoZ5Im/Crj1Frg/pWUaARcA1nHrTVlmQo4jQiQhY2kNlibqSu1/M0qObWA3uD+1PvDJFdHExLgkDswOv+3jS5FUkysJtwcSBxHiQjTLEzMSbvM3vStt3Adh5+G1QeHYJ5nOchFAzO/SJOth1c/zqPjc6ysGBz3sn5VXx9aJcKUoC1i9iFCf4sh91fMDc1yZ0op/0GsHIyFMhGWKxGGOhiRtFbN1lI7xB8asjgPBnbvPZR5bsN7eQqtOHYgJLkIMjk5pH/C0p6A9VTYelWvwvEPCUiawaQXPioOw9TSOmy2OEmgkxJbQadB4DoAKKYFhYnrUOG19em9EBCNx1/r51oRkZBnJZjpVM+0SWKLiMrgpIzdiJcPKhs+otkcHXofnvV5SQg76VWHtU4yMPjcMfu1BgdszIGOZSQupFLIMWK3MEQL8aso0XDkAD3RmHytQCZs7kwZGLYmJUJ9wkxsLX9TRvCcyYh5rNiUiaXDK73hz9u1j3GttfxOlRuFcy4j7NOV7JxFGswYRAdhIXy2HiSNL0o5z4xwQcMkKPIkmIKBpoHjvFIGcEJG+5I9B5VfmDa8aaZbopC/lGUd0HyquMBj5J8RwgvMuLWczF5GhCnuEdyzajLffrVpzkD+VNEnIjs3h10NA+I8uCb+8I306H49aLObtf6f10rqJNbeIP710kBMrTjHCGw50W3j4/wC9JXEBEWIJyOepXut5OuxHmLGrk4xIsiWcAj11HxqoubsLlYAG6tfK3p0NJHsaXQvcQ4YAhUjIb3Q3zRsfAN+G46HrQ3hOHlLELEWDDKxyXygkXIPiK7YyRwhja4W4Pitx+gqbFxyVlARXv/8Arayj4D+dUdiJjnJhrd5E7SNge0V757ZbWS+17e7WjxIkPaq8kH3eVVbUJ4d07t0pNfjGJRbmd/MMh/XauWNlkct2jSShTtsuo3NtflU9vJS+DliJmld5XYguCM2S4IG50OlZXLCzXmXN17tugBBFrdBWVRxBGX0E+DcsyC8065I0Bax3YjbTwony/MpDyNcDLYnYub3zX+gqZzxxcRxGIXLyD5L1pd/45EqKkYN1A7zjr1so0v5msmCc8sd8vJq1MIYpbI+ApxTDFlEpst+hIvbobb1y4LxPIuVgjKmYq341zb7dT40t47iby7n49fnXmGksAPE3+VWUaJqaapljcFyYieFRZDmUKOhF/wBasrFSM+KJTKQXsCBe2XT+VUhgMd2QUXs3vZuq38LbVbPs7412l3YrcNlAAtcEe9SJKzRHdFbhxkiI1+BrrFiyFHlv6Vri5FCsx0sCflSp/wAdl7POcmrZVA3Fvev57U888YdkcOlnmVxHBcep0sQfOkjnPlOXGYiGVGiyxxSRkOTcs5uCBY6efSu8fFZGuQF1kVE08dT9KmjicgjxEulo2yJpufP50n5EGh3oskHTFHh/s6x8MgMUuE1w6wvnLHpYle79ajp7JcWIyglw4vB2Z1YAtmvc93UW606YjmOZZFXKhsEz+JL+HhUviXGZY8UsQKBGAPe03voD4k7UvvQa7GelyrtLqyBw7gePRsEZ2wh+zlw5RTcKwAATQd6w1JtTO0411pZwfG8TJ2iqqBlBIJ/DY6qRvcjaoY43NliYmMBy2pGgsevh6UVqIo78DI3XA4xxAjMPrXFUuRrtS4eYp8/ZnLfvDbQm11PpatP+NzmEzBoroe+LagG2UetFamDOfp+RVdA/mLHI5cobKHII6qw3B/WkbjxBjsSCA17+FxRvm/h8mGlbGwKWhmCtiMOTe1wO8v7jakjjjwC5gmcxvqFdDp1tfoRV4q+UefO1wyHPiwBYC/rQiXEn8Oh8tK6YmYEWzLbyvUUhbdSfSnBFHb7XIylCzEHpXbAyWl+9JXTe5Ui221QhIbW6Vu2JYizd713+dDge2TMTxG5Atmt1YC/zWsoaaygdQ3c/+9Ef4T/KlGjHGpWmtKTfpYbAdLUHFSwR2wUfgvqJbpuXydki1F+tT5MKCbi+wqbgJY8neAI86CTYg3OUlV6AHanaslGVIPx4Ak5rlv5W8qZ+X8Z2WKiN7BIyTrb8JJ+tI/DuIm4Db9DXvGcdmawsD1I8PCl9u3ZWOfaqo+huGY48QwIMLKHawYMbWsdfjXPE8sTssalolCqb5SR3r+multap/wBnHOj4CW7gvh2NnA3X+IDr6V9I4DExzxLNC2eORQVbxB/rahkwwm7Y2LU5MaqIn4Hl+VTECyd1nZtSdTotvEWqNFg37JoXkVVMgbMUcKde9d7elulPi4ex2+lBOYpJ1dO8yxHbLGXHu7OBqflaozwxiuCsNVkm+WD8XwEDEq5njEbsrKL95iB7o6W03qRxvg8sk0csXZ3QG/abb6EeJ3oZiMNIy9rFhyxjv2eZSBm0LlUOuUnUA9RRCTieNEYPYtc21K3tcjVlG3WlSgrTRVvJKmpLquTMPyvL9oEpkUpqT+ckj3fDL51Ak5dkEXZ5kzLNnQm9sv5T51Nfi2LlikeKM/dEZLA2k3DafisNRbrRXDo8gVpAQ5QEgixv106Gmjjxy4SJzzZou21/wXMVwaUyxyFo8wtntext4D0rQ8vSFZI+0QIxLAAHMTfS58KYsRGfyn5VphozqW2H60/48BFrcwp8fxXYKv2mVFZhlVrHs2AFst+jDz3qs+McKhYs8Usa31IDXQ/DpV18wcAgxadniFJUHMCDYr5g1RXOHDkEzx4RSyRKXYflUbsT8RWqCSXZiyOUpW0Lc2CIOrp6hq5PAoP9otcT6V5QbOSOzRIP7y/oK5sFtoTf0rWsNANGVleV7QCFOEyAEo2oO1cOI4TI1wO6fp5V04rgJcPM8UqlJEYgqdxbqPEdQetEcORNHY77H18aSa2PcuikHvjT7AMcpG1cq7YiAoxU/PxrlTk6o2WMnYE+lbRRFmCgak2A9aN8BWy36k0y8IwavMhyi6979vrWfJqNjfBrwaV5WkvIXwvL8CIqmJCQACSNSba0ThjyAKjOqjZVdgB6AGtxXLEyZUZvygn6V43uzlLs+u/Hwwh/FcI0XGA+62IYXIuvasLjezDQ11ilY2Iklsdj2jj9TVl8Di+zcNjB0KQZj6lcx+pNVpD7o9P11rVqYvElyzzfT8sdTKScFSDGC5kxUWnadovhJqf+4a0xYPmxZIMRKY2Bgyh0BBzZhplbw/SkcmjnJeB7ePiEJJXO0QzAbdwm9jT6TPkm9rJ+qaTDjiskVXJGxHMeIZciMIIwLBY9Wt5uf5UGkNgWZ30uSTI3x601SciMNPtjX/8AaWtMRyHaNmkxxRLEEsiAC/maaWDO3bYmPW6KEahHn+hPbEjQkYi3iUltbxuRa1TcPK8ZzRyOp8QxIPwOhpl4jzPEsKwYcNPlj7MyMcqHS1/FvhSrGLAC97C2lQz/AOP+EjboE86byY0l44DGI5mxJiZDkZiLBj3SPlpVc9h2vDcYGA+0DFx22zMCtit/yDem4nc0uyurTMqG99QQNL7MAdjWnSaic+JGH1bRYcUVKHH0RuW+REkRnmYkhdFXQfE9beVQ+NcjNh4mlMnduoTTe+9/TSrW5YwVkt40u+1BBHgVzPZi1lQ7t4kDwArWpts8VxVFOSXF1vcXrStpN68AqxIxFJNhXtdJVy93S/U/yrKAT6t5o5ew+OiMUyjbuuAM6HoQ29vKvnXmTgU/DcR2cwup91x7si+I8COo6V9NSt3tKg8Y4dh5Yz9qSN4V7zdoNFA3a/Q+lHvgRWnaPmLiGHzjMvqPMUKJFttaMY7FRxSypEc8Ykfs2B0KXOX6UGkOppIJrhlJtS5CmB4xlAV0BA6jRv2NWFyrGDEZRe0h7t98o0/W9VdgcOZJFjG7ED51c+Gw4RFRdAoAHwrBr2oxSXbPb9GxylNyfSNzXKdM5jj/AMSRE9QWF/oDXavcHMI8TBK6MyRlmOW182Wy6fE15+nSeRWe3rW1glt7LA5sxYXBzAdQEHxIH6VXlHeY+PpPEsUaSDvqxLAAWF/DzoFatGvyKUkkYfRsEseOTkqbZ4RTDyFjo4Vx0krZUWSK5/8A56Cw3JOnxpetUjhRBwXEiCDaaHY32C0NFak39DerpSxxj8tB/ifO7Nphogo/PKNfgn70sYt2mYPM7SsNi5uF/wAqbL8q8NeVPLqsk3yzVpvT8OFWlz8s0mcKCzEKo3JNgPjW3DMHPitcNESnWaS6xD0vq+ngLab114R9mSZ5MVA0x7vZG2ZU0ObuE2vfqfGmXF85JkISOUkKcoIAW/TY6CtGDDiaUpvkw6zWarc8eKLS+Smud3mjmaCSbPb8Kiy/L9/KmHhmNjbhuDldhmw7TREfw6MCfpS1xbgOLmleQx6sb6sKKcncJeGUDGQdrhSczxgg3YDunfUXtcV6XuYUqTR4E9PqpvdKLZz4j7R8Qfu8LaJds9rt667UK5uxAkXD53aXEEfeOzX0PuqBsAPKtOesPh48WThNIz3shFihvqpFBMfjO0YNaxAt8qel4MzvpnGaIqxU7g2NYbAef6f71M4q6mQupFmCm3/SLn50U5W5XOMEjNMsSJuz+l7nwFuvWjZyFwDpWU6+zTl6PEcUSNpFeOImQ9O1CagKDrqbH0rK4B9B9oSaqn23cfltFhY2yoylpApILDZQfFfKrYU6W6mvn72mcREmOn0BCtkHkFFrjw1o2rCotpiNesVrG40rpMLgMBbofC/71yrgIZuTcWgmzzyAKgJXN1Jp4XmHDdJV+tVJGtyBTRypwtp8VHAE7jtlLDe3/isuo0sZvcz09J6hPCtkUPkfEFYAqsrKdiInIPoQNa9+2D/Dm/0X/arZlAhhKxEIscZC+Asuht1qq35t4gFL/ajlF/wpchQczba3NhWaWkxR7bNmL1PU5b2pHH7aP8Ob/Rk/at8M0srBIcPM7noY2RR5l3AAH1pj5J49i5XmabEFlihDMuQaswJBzAAKRtl+NLbc5Y4m32lwM9h3VuVKkm5tvcaeVd+NhjV2H/0NVK0q4GrhfILPZsbKbf4MJKr6NJ7zfCwo3zLw1I+GzRYeAKqgEJEngQToNz9armLnvHmw7U3dVGbKoCkgm4FtG08761J4fzBxKQhfthzO6IDlWysVuToNQennWlSxpbUjBPFnlLfOV0Q/tR/wcR/oSf8A1rxsWRqYcR/oSf8A1pu5W4pjZlxplnZuzRVSwAyv3iSLDewF76Uoy8644pl+0MLZjm0zHKyggm3gbjwNZXpcX2ejD1DVO0q4NDjx/hzX/wDZf9q8OPH+HN/ov+1evzTjD/fHNqL3AtlYAkfxZTe9STzFxAI7/aCyoUuO6NWPjb3Ttbxo/jYfsf8AP1X0RG4koBJSUAbnsnFvXTSon/qXDHaUfWrO4NIZYUla2Z17wBuAdiv+1VH7TuUlw83bQqESQ3AXZWG4t08atD0/HLowy9dzwfKQK480ckxliiM7Kl3XKbLl/E4GuUCo/McE5wmGxDveOXMAgVVVbdAFFM/sxPaY7tMhVDhphM1yTLdLGw8RYaV14LxDDNw9oMXFBFFH2ghMpYzliD3sn4TtWlLYkl4PMy5Hlm5tdgLlfFyYViYk7VpMMXVezDnMu24Jyi9yBvagfEeZZpQ4Lue1A7XMQQxGtwLDLr0FS8LzA2HijKAGRoWjzHUoCd16ZrXHxpa3Og1PQD+QpkvkQO8jcQlh4hhZIrs/aqttbsGOUj0sT8qyrc9k3s9SBUxmIB7cglVO0QI3/wA5HyvXlcwBnnHnyDh2JSF4jISudrNbIDoPU9aoXjcheWRyb53ZgfEEkj6VP9oHEe34hiJL3BchT/CugH60MwGKXLle1DJx0UxfZGxEjFFS/dUkgW6nqT1rF4exQMOpIAPW29F4+Ho+1x6Vphcb9+EMRsLIq9bDx8SdSTSxnuGnjoBhTe1utjT5yZxAYDEpKUJXZw24B/EAeoB+VMHLHs/jeaKWcnsmbMqG2Zz4seiX0Apr9pHKoljOJiX7yMd5QPeQdAB1H6Uk5uSuI8IqDqQ3cQw5xWGZYZQvaqCslswsdb260mYr2bliB9rCqFy2MVzrqxvfcn6UM9lXNXZMMHK33bm8JP4GOpS/5TuPO9WvIgJp1tmrYjc8UqTFHh3LzYXD4lJMUoWXXMEskRsAzEHfNpf0pWh5OgGUDikRL3K3jGt+7b01PxNN/tFxJTCZEF2kYADyXU/yqru00YE2YO9hbRrKL3I2ALX+FSySUXto1afFOcXPdQ3RcjQSymKHGrdV7qhQWBUZbufxAAnTzrvwfljDxlSOII/YSCRxkHuoMtvLXc1x9mOEvipJMufs4Qvak2yswuQq31zLYkkdBSziJPv3yuR3rEW2zhsqjyaxJvtlFDdFJOhljnOUo7uixuCx4eBZj9rjdcVISn4baZco8SL6k0rwcr4TM4lx8RYh1RQoUBj7xcX7+gtalZZSvdkLKA0ZJADEZ8wItsdQPWiPLkUP2mAu2ZcwDFlALBc6KSOnfbX4V3uJ9ob8ecE6k/kZoOQIZoUMeKz5i2eQICGDWBEY/AQBb4VvL7OApscSSCzEgxjUWsq+o3NHPZy5WGaI2vHiJF9NAf5/Wj+J31qyhFpWjFLNkUmrAXLfBThYTGZO0u5YkLlAvpZV6DQUO9o+DgfBSGd+zVCGDjU38AOpI0plxGJVFZ3YKgGZidAAOtfPvP8AzfJxCcJHm7FTaJBux/MR1J6Uye3olt38yIfLfM32fFhlJjjySRqdzHnGkhHVgbE0u4lJHlIYl3Zj3r3zG+9zv41YzezEjA9qJbYgDM6Ed2x2UEbHxJpIhwuKgkVuyzFb2BGZdRamVAdtg/GxBbLnDEb22HkDRHgEZQjEEaR95T4sNrehrqnAyxzspjjAubkA/wDiofEeIAqIotIx9adHNH0H7N+bft2FzPbtlOWQDYn8w9ayqe9l/HzhsbEhPcmOR/jsfnWUjXJwpzzZ5C3ifpWsmH6ivDGY27yn+vOpKN1U0JXZSCTVMiw4l091iKlJxSXMGzC42YgXFd48OGFyBp5U58kciCeWOTFApCWAVPxOf2pVJPwGUJRXY2+yTCYqf/8AJxLMUXRL9bbWGwFWytuoBrnBh1RAiKFVRYAaAAdK2RfG9FRom5WUf7UOWPscxxEYIw8huMv92+5GmwvqKe/ZrziuOw+Vz9/FZX/jXo9vofOnDi3Do8RC8Mi3VxY+XgR5iqFfD4jhOPFy7lDfYBJEJ/b61NpY+S0f8iot3mPlxMaYu1lkRI79xLWe9tydRaw2oF/ysia5ONxP4vwx/jtm/D1AA+FOOBx0c0Syx7ML+niPUVJSQWtTqMZck3Kcf1ti5y9ycuEmMwxEst0MYVwoABI1uoFzp1oXP7OYmJJxeI3JQAIMhPW+XvWBsAfGnoPppUcA3ouC+Ae7Pl2Jv/LqHvZJ51uqqpGQ5LG5sCLHMddduleP7O4L9yadBlyrYqchvdnBYaljuDT0thWrg22obEg+7N+Re5e4AuEkmZZZJO1y3DgWBXqMo1Jvreijvc/Xyro7WPnVb+1jm94V+yYf+0k99x+Ffyg/mP0rnwck5MVParzwZ2bCYdrQg98j+8I6f5R9aJ+zPksxgYudTnI+7Uj3R+Y/xHpQvkDkcyOuJxAORTdEI949Cf4R9atzsDbTT6D5VyDJ1wd+L4WR8GRhWCuV7pba99bg9DtVB8dxHEoXKywhCeqrofSxq/ABbLc2PSq39oPCsSoZ4pXsLkbfXwPnXR7BfBU2Nlmb+1ZvQ3/Soge2w+dMPD+JYiZhE8YnB3BFiP8AqG1bcxcvJFrGSCfwHbz16Wqti0LsMxVlcbqQQfMG4rK0NZRo5NBTC8VsMsq51/8AkP5GpSYPDyaxvlPhf9QalQcsAH7xz6L+5otFhFjU9hEpfpmF7/GjQlknlvluxzyMHynYC367VZnJmCllZpZwoyG0aj3VH/iqzwPFEhnWNhnY6mzd1fW+5HhV18v8agmCPGwKOgIa9tQcoBFT20PvtBwIba106W1rYoa9U+VFCGoXWlznblkYyGwAEqaofHxUnwP60zGs6b0JwUlTDGTi7RT/ACNxR8PMcPMSFY216EaX8iNjVlmA73pU9oXAbEYuIaj+0A+j/vU7k3jwnTsiw7VP/kB/XyrJik8ctkjXmiskPcj/ALGCNDW6LbpUhYD8a9ZbVsSMTZHVPG9bvW4FD+Y+Lx4SBppNbCyr1dugFCVJWwpW6F/nzmMYODuWadx3Afw/xn06DrSNyTwtsUrPiBmUG5YjViTfQ+NQ8Dg5+K4wltLm7Hoi+H7Crew3C0gjWNBZFFgOvqfWste678I1uSwxpdsjQwBQABoNq9Y1JdbDatVjvWhKjLZHZbWN6hcSjvBISAxysACNNvDrRg4bSuGKQKO+Pu8uvx3+J2rgFF8Z4BiOG4h0El1ZFfa2YN0t/CdKAY+ZnvnbNbpc/oNTVoc7RyyZ5yihEbIrX94W2I6AaCkLgaZw7R5BMulmF9PHzFr1WLtHWJ5Xx09ayrOxOAjcd+NW08LXrKY43jhudj8ag8Rx+S6xi7dT0HkPOrPwHJ5mQkEIOl+tAOJey2ZATG+fr61ykhJJlTYmEE31JOpJ3NT+C8zz4eUFHym6D+EKNxbxNEOL8JliJV1It1/rpQJsKRrl+NF89Cq0XRyp7R0ZO93S2cgMSVNuoO4B8KfeAcdjxMSOCAzEiwNxcdL/AFr5fE2QXQ62t8KK8M5gxEEYWFsoBvpvfxNI4/AykfUiivCtI/sx5slxiMmIt2iAG46g+PnT2KUc4yRAggi4IsR41UXMvCZOH4kSw6KTmjb9UP8AW1XEaG8c4WmJiaJ+ux6qehqGbHuVrsthy7H9EflfjseMhEinvDR16q3hRWQVSGF4jNw3FtobqbOvR16N/vVucK4/BiIO3SRcgHeubZPG99qGHNap9hzYdvK6JGNnSFGkkbKii5J6VTvGcdNxTEhUBC3tGvgPzHz8amc4c0HHSCGC/YKdLf3jeNvDwFPXI/LIwsedx9641/hH5f3qeSTyy2x6KQgsMd0u30TeWuXY8HCI1F2Ort1Y/tRKRBaxqQWrwWNa4pRVGSTcnbIBjF7E716MP/tUpox4Utc58XaGPs4lN3GrDoKIAxO6LbOwW/x/SgHMvMqYVO0kCSQ5gCqd51B2lNzqAegqpp+Y58OSkchynRkJJBvvvrQCWd3ZM7HIvui+y3vl9Kb22wbhz4/x4Y3BySJbRXjcLoF1vG5U9SKqpMQ6urpdXFtb7mmBUFyVFhf3ehB/Wn7lP2YduBNiwY06J+J/PyFdSiHlgDl3in2iMkizpYNbY+Y8KyrXxPJ2FjhIhjCWF7+PqayhuGRL4VzBZQjLoNjRaDjcTfisfOgjYFbaVwHDR40lhoO8Y4ThsWhV8t/zC1x+9U9x7lRopWWMq4BIttf0p2nwTA6tYeND5pY1ObPqpvoL2PjTRlR2wrTiHA5kPfgkXrqh/WouE4ZKWuqOf+k/zq3B7T400dg9t/uzQ7i3tCwcrK6xSAjQ5R71FzF2B/2WcDaHNKylQyAa7k9asLPVScP9rEMS5Owktc2zEC3lW2L9sYA7kI+LVF5Yrsp7Un0WzmrGNUJj/bFim0jCJ6C/60u8T50xsvvzvY9A1h8hQeX4QyxfLLX9qb4Ro8xkTt12UG5YHobbfGqYXEt3lDEId1BsD6+NcO2d/eJP6mjuH5UxJg+1NERCDr+Y+dvy+dZpdtmuHCSGz2XT4RZS+IkCyD+zDCy67tfx8KuSOZXF1ZWHkQf0r5lkUjbUeXTw0qdg8bLHqkhGnQmuhl2LhHZMCm7s+kUUeFe21r54g9oONSQjtmsNLE3piwPtBxRDM0vdXclRp+9bIu1ZgcadFyMlJnP+DkKh0UlbWNj1qv5varjDfIV8rrUHGe0bHSDLIyZd7ZP96dJitkR+ATsTaItf6Vj8oYoAFoyi7Zm/rU1P4RzxjIyQnZ2Y6krr86Z+GcRlxYYzPcja23yoynt7DGF9G/K/LmCgVJJW7WTfLbQH08ab/wDjWb3V+f7UHwnCyNzr5UShwgUbfGpuVjUQuI4h30ubeArKICEeVeV1ncHZbV6XFCVm8a6DEDyoBAvMuM75JPdGgpLxuNDIVIIPRgf1po5h4Q0zlgxynoOlLmJ5Um1sb+tMmjgGuDLC22Y79K7YjhoR8i2so3XrfUn1pih5alKKCRb+vrUzCcttr3hfb+vOu4YKK4xmHYEix3uSRsKEOCdht51bJ5UHeV3BB61rHyVAd2v6CotO+CiarkqIxN4V3wsZZhcf10q5MNydhLgFSaMYTl/BxHMIUzDqwv8AKjUjt0UU0s4iPugsPzdPh4Uxf80cYF7MdkEtly5NLUH5rhftnDfmOU26X0oJhMAGPfe1N7aQjyNhSLjPezZV9BoPhRDiA90t3QwuCRavOFYPDobhAx8Trf0q0cI6NAiyqrgKNGANv2qTwp9Flna7KRWIklgLi5J9KlpmcZatDFcCwhBCxhL6d06fWhP/AKRiuSrsD/XhWlOkZmrYoQYFRfUg+Ftv9qzsdbnUdT0H7U4T8t2vdr3+lD4uAyq/d263OjV29nbQJAikjKdevl5VaXKmGCx6De3wpRwnLpvcJlPgTp86sDgGFdYyGsCfCo5ba4LY2kFlQ5RauZjJrvEoAAGwrU6b0Y9CPs45LG1ZXrXrKICNgmjVGDDU7G17aVNWRGACLci1+7tbehafCpUTi+pKjqV3qu0nuCIjVr3FunujSu0GCVAe7cb6iuKzx2Az6emvx860n4nYlVa4tvb+taXaHcdBEpW4Att00vWskAUKStzlINhqT46VxONNtLdOnhW6zhgGdtRfS2mtdQHI5zIuUZY99NhvXV1AsSmgPgPC36152o7oz7HTTau0xQ6GXQnoP60rqO3EWWIlMqr3upsPHxPlWmJXNGCI9BudLmxtXV8Rlb7si1hc2Fce2Nsp2/ejQNxwx+GjlTI0QN+oA8taG4ThGHRWTsA3e97IPD3b9KZIzGB7yj4VDeCIsWza+GU2+VdR1kXBYKNS2WFVudAVFxpa1uldUiVFzdnqZL9NtrV1Mi65XFx0C2r12BXK0gsf4aFHbjVzclsmmW1rC4N/CtHlHdbILX0sBc6bWrJJcqjI4Pla3160OfFyHuHVfTaiogciThoSXZspBze6QNPD0qZElyD2e1wRYddKiQYhlFgR8h+tdo8U46j5b1zQdx2wOFXKxAuGby0NEEnA7pXYDa1C/tjWsCPlWdsGGZm7/TTcUNodwUhFug8dPPzraScJ7w3Om1DWxx37Q/8AaPhWk2JZrZjf6V1HbiTi8SrCwFrVlQgR61ldR24ivvXqV5WVQVndPdqOdxWVlBHMm9Kxdh6V7WVzAaPUeX3TWVlcFnDD7n1qXNt8ayso+BfJ5ht6lydK8rKUYifirri+lZWVwCEetbHf4VlZTCnp2r3p8KysoBN+lavtXlZXBNRW/QelZWUDjaPavaysrgn/2Q==", url: "https://drive.google.com/file/d/1xqucoWKrHYKgkPtIH504nV_QWrezUcC9/view?usp=drive_link"},
+        {title: "Elf", year: 2003, tags: "Comedy, Family, Fantasy", section: "movies", description: "A human raised by elves travels to New York to find his real father.", poster: "https://resizing.flixster.com/0TpL0dRSitzkWvPa8I-FA_GM894=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2ViODEwNzM0LTc2ZjktNDdjMC04YzczLWVhNmYzOGFkZGZjMi5qcGc=", url: "https://drive.google.com/file/d/1-cJP_6uvuboesHkiYPgfIg49eKvsBsF0/view?usp=sharing"},
+        {title: "Evil Dead", year: 1981, tags: "Horror, Thriller", section: "movies", description: "A group of friends awaken demons in a remote cabin, facing terrifying consequences.", poster: "https://resizing.flixster.com/TigkmjqACahOlz2FgxBEgKYyzzA=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzdiZTRjMmFkLTAyNzYtNDQyZS04MjQ3LTJhNDY2YTNhZmUxNC5qcGc=", url: "https://drive.google.com/file/d/1E2Epz2Y7Ji5xCnKT0RtqMz7r0ENBT4YB/view?usp=drivesdk"},
+        {title: "Evil Dead II", year: 1987, tags: "Horror, Comedy", section: "movies", description: "Ash continues to fight the undead in a darkly comedic and gory battle.", poster: "https://resizing.flixster.com/lM1IChO6u4UeEP-Nhqh4tlR9eNo=/206x305/v2/https://resizing.flixster.com/ANcLNYfsRZr4RZ7h7i2X9sOfN2I=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2I5OGJjOTQ2LTdjZTctNDlkNS04ZTM3LTk2M2RkNmE0YTIyYy5qcGc=", url: "https://drive.google.com/file/d/1BklK_O-rTRNrk0q7xOhXt_LEiBmmYan8/view?usp=drivesdk"},
+        {title: "8 Mile", year: 2002, tags: "Drama, Music", section: "movies", description: "A young rapper struggles to escape his life in Detroit while pursuing his dream.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p29400_p_v8_ax.jpg", url: "https://drive.google.com/file/d/13KF2oQ-b1WRvbjL0vMMAMlI0Vj8TYBuM/view?usp=sharing"},        
+        {title: "Friday", year: 1995, tags: "Comedy, Drama", section: "movies", description: "Two friends navigate a day of comedic misadventures in their neighborhood.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p16719_p_v8_aa.jpg", url: "https://drive.google.com/file/d/1SKE9sQ-DnHRRVGxU10Qk2QJ1Ws2jvv5M/view?usp=share_link"},
+        {title: "Finding Nemo", year: 2003, tags: "Animation, Adventure, Family", section: "movies", description: "A clownfish crosses the ocean to rescue his son with the help of new friends.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p31890_p_v10_bb.jpg", url: "https://drive.google.com/file/d/1jP7PoHapLf_S_n75Afdc0RvzSwRqPcwm/view?usp=sharing"},
+        {title: "Friday the 13th", year: 1980, tags: "Horror, Slasher", section: "movies", description: "Camp counselors are stalked by a mysterious killer at Camp Crystal Lake.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p1820_p_v10_aa.jpg", url: "https://drive.google.com/file/d/1Tu0WxRUC-gADzYFEnSvudZ3MZ7Y735jH/view?usp=drive_link"},
+        {title: "Friday the 13th Part 2", year: 1981, tags: "Horror, Slasher", section: "movies", description: "A new group of counselors faces the wrath of Jason Voorhees.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p2447_p_v8_ac.jpg", url: "https://drive.google.com/file/d/1ROenMVwRyMGW0EIsf4Xg67EvRAAT5kcX/view?usp=drive_link"},
+        {title: "Friday the 13th Part 3", year: 1982, tags: "Horror, Slasher", section: "movies", description: "Jason dons his iconic hockey mask and terrorizes more victims.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p5772_p_v8_ae.jpg", url: "https://drive.google.com/file/d/1Ak82TmSBG3_lpbUgsDq22AcZ5gzGvTTB/view?usp=drive_link"},
+        {title: "Friday the 13th: The Final Chapter", year: 1984, tags: "Horror, Slasher", section: "movies", description: "Jason continues his murderous rampage while survivors try to fight back.", poster: "https://resizing.flixster.com/nlV-okIO_B4n85VeeIZRrAWuZuM=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p7735_p_v12_ax.jpg", url: "https://drive.google.com/file/d/1M2OD-EPO3AjkzwYNvJLXCNe4B7y6bmM6/view?usp=drive_link"},
+        {title: "Friday the 13th Part V: A New Beginning", year: 1985, tags: "Horror, Slasher", section: "movies", description: "A troubled teen faces the return of Jason in a new killing spree.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8672_p_v8_ac.jpg", url: "https://drive.google.com/file/d/1cB43qNpCCf90tHch87EC4hBywV0Ao5-V/view?usp=drive_link"},
+        {title: "Friday the 13th Part VI: Jason Lives", year: 1986, tags: "Horror, Slasher", section: "movies", description: "Jason is resurrected and continues his deadly quest.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p9435_p_v13_ax.jpg", url: "https://drive.google.com/file/d/1Yug3RMr7f8z5P7TjxWgRN0geoWL7UnU4/view?usp=drive_link"},
+        {title: "Friday the 13th Part VII: The New Blood", year: 1988, tags: "Horror, Slasher", section: "movies", description: "A telekinetic girl faces off against the unstoppable Jason Voorhees.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p10813_p_v12_ax.jpg", url: "https://drive.google.com/file/d/1CG5Te-vXcvPrEuJtQsN3HZigm6bz33Os/view?usp=drive_link"},
+        {title: "Friday the 13th Part VIII: Jason Takes Manhattan", year: 1989, tags: "Horror, Slasher", section: "movies", description: "Jason terrorizes a cruise ship and later New York City.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p11765_p_v10_ay.jpg", url: "https://drive.google.com/file/d/1oRePBRxnrhk8feVEE3OtTNnE0Y70a4ZN/view?usp=drive_link"},
+        {title: "The Final Friday", year: 1994, tags: "Horror, Slasher", section: "movies", description: "Jason returns in a final showdown against his victims.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14954_p_v8_aj.jpg", url: "https://drive.google.com/file/d/1mvOr1kr0lX3XzbYIVJps-Mkz7UxjLUhP/view?usp=drive_link"},
+        {title: "Jason X", year: 2001, tags: "Horror, Sci-Fi", section: "movies", description: "Jason Voorhees is frozen and wakes up in the future aboard a spaceship.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p29363_p_v8_aa.jpg", url: "https://drive.google.com/file/d/1f_m_NTsYbbVFh1FBqXC1TOuS_4Yp6uSd/view?usp=drive_link"},
+        {title: "Frozen", year: 2013, tags: "Animation, Adventure, Family", section: "movies", description: "Princess Anna sets out to find her sister Elsa whose icy powers have trapped the kingdom in eternal winter.", poster: "https://resizing.flixster.com/R9OtbE5Q8iDL2KoqaQphdhFL-To=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2E4MTE4NDczLTYwZjktNDA0Mi04NDA4LTYyNDBjZTRlMDhkYi5qcGc=", url: "https://drive.google.com/file/d/1XIuN4Zp35mW0iN4p0ME5APxH18-6Zqft/view?usp=drive_link"},
+        {title: "Frozen 2", year: 2019, tags: "Animation, Adventure, Family", section: "movies", description: "Elsa and Anna journey to discover the origin of Elsa's powers.", poster: "https://resizing.flixster.com/R10FsECn4L0xGZWqktgVG583ErU=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzBiYmIwOTg4LThhZGMtNGJlYy05YjQ4LTJkYmVkMmU3YjJkZC53ZWJw", url: "https://drive.google.com/file/d/1hpUpKEdeT9ta-8FjSpMUAXw17E-8uwIY/view?usp=drive_link"},
+        {title: "Guardians of the Galaxy Vol. 3", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "The Guardians face new threats and deal with Rocket's past.", poster: "https://resizing.flixster.com/p8g-u3ZgPuxrg4x7aq1tidyffGg=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2FiZDg0OTc0LWVkMTktNDVhYS05ODljLTNkMjYxMjA0OTdjMy5qcGc=", url: "https://drive.google.com/file/d/1pFavPs7Mi9rx_BrAjxbeHNWg7ClAB2_K/view?usp=sharing"},
+        {title: "Good Burger", year: 1997, tags: "Comedy, Family", section: "movies", description: "Two friends navigate the challenges of working at a fast-food restaurant.", poster: "https://resizing.flixster.com/S8GpFHeSqd7VT2WkWI08FUVtRFI=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p19627_p_v8_ab.jpg", url: "https://drive.google.com/file/d/1jucPocCb8aq23Bh-GFLcniAk-k5UU-wC/view"},
+        {title: "Good Burger 2", year: 2024, tags: "Comedy, Family", section: "movies", description: "The duo returns for another fast-food adventure.", poster: "https://resizing.flixster.com/zaYjQ4H5MSoSgKq84QypPqdJhow=/206x305/v2/https://resizing.flixster.com/D4k2HYrAS37SnXMzAWbKoRtt9y0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2ZkNWU0YTkxLWE2YzgtNDI3Ny1iMGE4LTdjMjJkZWQ4Yzc0Zi5qcGc=", url: "https://drive.google.com/file/d/1TOjPbqSF5UqnPrn1zFqEWvkUeBNiyMax/view?usp=drive_link"},
+        {title: "Ghostbusters", year: 1984, tags: "Comedy, Fantasy, Sci-Fi", section: "movies", description: "A team of parapsychologists starts a ghost-catching business in New York City.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p8603_p_v12_bh.jpg", url: "https://drive.google.com/file/d/1Kur_TXv1AOx8hhs0qGc_IwZXKmWvD6Y7/view"},
+        {title: "Grease", year: 1978, tags: "Musical, Romance, Comedy", section: "movies", description: "Teen love blossoms during a summer romance at Rydell High.", poster: "https://resizing.flixster.com/F3-tkbs62FXMjB30nIrMq_xmxH0=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzUyMDc0MGJlLTNjNzEtNGExOC1iMWU1LTE0ODA3NmVhNmNkZS5qcGc=", url: "https://drive.google.com/file/d/1W77S931ShuhZ2RVeiNrfdQQUcR4pKsD0/view?usp=drive_link"},
+        {title: "Garfield", year: 2024, tags: "Comedy, Family", section: "movies", description: "The lasagna-loving cat gets into hilarious adventures in the human world.", poster: "https://resizing.flixster.com/8830tX2h1RGoUyDnA8n7Fhzf8RA=/206x305/v2/https://resizing.flixster.com/3pA6HOoDAL6ZYKPrt_hkiVf2L4c=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2U0MDAxOGI2LTViZTEtNGU4Yy04NTlmLWE0ZTc4Yzg3ZDBlMy5qcGc=", url: "https://drive.google.com/file/d/1g_YZyeIbjua21PNL4ZLfeIzJx-givpPE/view?usp=sharing"},
+        {title: "Garfield 2004", year: 2004, tags: "Comedy, Family", section: "movies", description: "Garfield navigates life in a world of humans, causing chaos and laughter.", poster: "https://resizing.flixster.com/wRSQg8VmaUEFAj4iRZdlMZnBjj0=/fit-in/352x330/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p34575_v_v12_ay.jpg", url: "https://drive.google.com/file/d/1xMRDhscsmtcrECXXuOsqpAADTHJ0FxGS/view"},
         {title: "Hidden Figures", year: 2016, tags: "Biography, Drama, History", section: "movies", description: "Three African-American women mathematicians at NASA help launch John Glenn into orbit.", poster: "POSTER_URL", url: "LINK_URL"},
         {title: "Home", year: 2015, tags: "Animation, Adventure, Comedy", section: "movies", description: "An alien on the run befriends a young girl as they search for her family.", poster: "POSTER_URL", url: "LINK_URL"},
         {title: "Home Alone", year: 1990, tags: "Comedy, Family", section: "movies", description: "A boy defends his home from burglars after being left behind during Christmas.", poster: "POSTER_URL", url: "LINK_URL"},
@@ -500,9 +615,9 @@ const tvShows = [
   poster:"https://m.media-amazon.com/images/I/8138HMFdVoL.jpg",
   seasons:[
     {title:"S1", url:"#", episodes:[
-      {title:"E1", url:"https://drive.google.com/file/d/1SiFwITvaZ_Fnq9jQAIWzUZsYuHDkCtsE/view?usp=drive_link"}, {title:"E2", url:"#"}, {title:"E3", url:"#"}, {title:"E4", url:"#"},
-      {title:"E5", url:"#"}, {title:"E6", url:"#"}, {title:"E7", url:"#"}, {title:"E8", url:"#"},
-      {title:"E9", url:"#"}, {title:"E10", url:"#"}, {title:"E11", url:"#"}, {title:"E12", url:"#"}, {title:"E13", url:"#"}
+      {title:"E1", url:"https://drive.google.com/file/d/1SiFwITvaZ_Fnq9jQAIWzUZsYuHDkCtsE/view?usp=drive_link"}, {title:"E2", url:"https://drive.google.com/file/d/1HSDGYP2bgUcrcMwRAlf-Y_8wsSAOz-bk/view?usp=drive_link"}, {title:"E3", url:"https://drive.google.com/file/d/1ASquaANl8GEg7S9xHO7QoBTCODf7fek1/view?usp=drive_link"}, {title:"E4", url:"https://drive.google.com/file/d/1sZJqBXh35XQ3cVgD4Wl6R_r417y-OqKP/view?usp=drive_link"},
+      {title:"E5", url:"https://drive.google.com/file/d/1GMCgvDJHvkXd_EVDPpEV7TT3Rg1FXx6F/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/1Q9QqFuwVZMnm7lA7XHKo_8KxfikyjG1h/view?usp=drive_link"}, {title:"E7", url:"https://drive.google.com/file/d/1jrucEdIMaq7hkL2MuFGams6BoiSISzCA/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/1IHO_d6LfJz8DODJqUYVSWfMVW6jfFFmK/view?usp=drive_link"},
+      {title:"E9", url:"https://drive.google.com/file/d/1Ym_DW1SbuzEAfvZdqWwqhBRhC85brgMJ/view?usp=drive_link"}, {title:"E10", url:"https://drive.google.com/file/d/1tQaqOH91WhjqZP-RWtprAN3geyQueDIn/view?usp=drive_link"}, {title:"E11", url:"https://drive.google.com/file/d/161buZFYXtNYCM0aOOlqpXnsRLFUbsAvM/view?usp=drive_link"}, {title:"E12", url:"https://drive.google.com/file/d/1t3-HSwMU1zwxTcQRgCoEjMaHkEPXbSTN/view?usp=drive_link"}, {title:"E13", url:"https://drive.google.com/file/d/1koRA2GDJuTjBorFy9mf4ahzRl91v1fVq/view?usp=drive_link"}
     ]},
     {title:"S2", url:"#", episodes:[
       {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},{title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
@@ -889,218 +1004,223 @@ const tvShows = [
 ];
 
 
-// 👁️ VIEW COUNTER
-const todayKey = "views_" + new Date().toISOString().slice(0, 10);
 
-// total views
-let totalViews = localStorage.getItem("totalViews");
-totalViews = totalViews ? parseInt(totalViews) + 1 : 1;
-localStorage.setItem("totalViews", totalViews);
-
-// today's views
-let todayViews = localStorage.getItem(todayKey);
-todayViews = todayViews ? parseInt(todayViews) + 1 : 1;
-localStorage.setItem(todayKey, todayViews);
-
-// display
-document.getElementById("totalViews").textContent = totalViews;
-document.getElementById("todayViews").textContent = todayViews;
-let continueWatching = JSON.parse(localStorage.getItem("continueWatching"))||[];
-let currentItem=null;
-let featuredInterval=null;
-let featuredIndex=0;
-let fromContinueWatching=false;
-
-const sectionsDiv=document.getElementById("sections");
-const movieModal=document.getElementById("movieModal");
-const modalTitle=document.getElementById("modalTitle");
-const modalMeta=document.getElementById("modalMeta");
-const modalDesc=document.getElementById("modalDesc");
-const modalSeasons=document.getElementById("modalSeasons");
-const playBtn=document.getElementById("playBtn");
-const finishBtn=document.getElementById("finishBtn");
-const nextEpBtn=document.getElementById("nextEpBtn");
-const modalPoster=document.getElementById("modalPoster");
-
-// ----- MODAL -----
-function openModal(item, continueWatchingClick=false){
-  currentItem=item;
-  fromContinueWatching=continueWatchingClick;
-  movieModal.style.display="flex";
-  modalTitle.textContent=item.title;
-  modalMeta.textContent=item.year+" • "+item.tags;
-  modalPoster.src=item.poster;
-  modalSeasons.innerHTML="";
-  finishBtn.style.display="none";
-  nextEpBtn.style.display="none";
-
-  const cwEntry=continueWatching.find(c=>c.title===item.title);
-  let desc=item.description;
-  if(cwEntry && cwEntry.seasonEpisode) desc+="\nLast watched: "+cwEntry.seasonEpisode;
-  modalDesc.textContent=desc;
-
-  if(item.seasons && item.seasons.length){
-    playBtn.style.display="none";
-    if(fromContinueWatching){
-      nextEpBtn.style.display="inline-block";
-
-      // ===== Updated Next Episode Logic =====
-      nextEpBtn.onclick = () => {
-        let season = 0, episode = 0;
-        if(cwEntry && cwEntry.seasonIndex!==undefined && cwEntry.episodeIndex!==undefined){
-          season=cwEntry.seasonIndex; episode=cwEntry.episodeIndex+1;
-        }
-        if(episode>=item.seasons[season].episodes.length){
-          season++; episode=0;
-        }
-        if(season>=item.seasons.length){
-          alert("You finished the show!");
-          continueWatching = continueWatching.filter(c=>c.title!==item.title);
+  
+  
+  // 👁️ VIEW COUNTER
+  const todayKey = "views_" + new Date().toISOString().slice(0, 10);
+  
+  // total views
+  let totalViews = localStorage.getItem("totalViews");
+  totalViews = totalViews ? parseInt(totalViews) + 1 : 1;
+  localStorage.setItem("totalViews", totalViews);
+  
+  // today's views
+  let todayViews = localStorage.getItem(todayKey);
+  todayViews = todayViews ? parseInt(todayViews) + 1 : 1;
+  localStorage.setItem(todayKey, todayViews);
+  
+  // display
+  document.getElementById("totalViews").textContent = totalViews;
+  document.getElementById("todayViews").textContent = todayViews;
+  let continueWatching = JSON.parse(localStorage.getItem("continueWatching"))||[];
+  let currentItem=null;
+  let featuredInterval=null;
+  let featuredIndex=0;
+  let fromContinueWatching=false;
+  
+  const sectionsDiv=document.getElementById("sections");
+  const movieModal=document.getElementById("movieModal");
+  const modalTitle=document.getElementById("modalTitle");
+  const modalMeta=document.getElementById("modalMeta");
+  const modalDesc=document.getElementById("modalDesc");
+  const modalSeasons=document.getElementById("modalSeasons");
+  const playBtn=document.getElementById("playBtn");
+  const finishBtn=document.getElementById("finishBtn");
+  const nextEpBtn=document.getElementById("nextEpBtn");
+  const modalPoster=document.getElementById("modalPoster");
+  
+  // ----- MODAL -----
+  function openModal(item, continueWatchingClick=false){
+    currentItem=item;
+    fromContinueWatching=continueWatchingClick;
+    movieModal.style.display="flex";
+    modalTitle.textContent=item.title;
+    modalMeta.textContent=item.year+" • "+item.tags;
+    modalPoster.src=item.poster;
+    modalSeasons.innerHTML="";
+    finishBtn.style.display="none";
+    nextEpBtn.style.display="none";
+  
+    const cwEntry=continueWatching.find(c=>c.title===item.title);
+    let desc=item.description;
+    if(cwEntry && cwEntry.seasonEpisode) desc+="\nLast watched: "+cwEntry.seasonEpisode;
+    modalDesc.textContent=desc;
+  
+    if(item.seasons && item.seasons.length){
+      playBtn.style.display="none";
+      if(fromContinueWatching){
+        nextEpBtn.style.display="inline-block";
+  
+        // ===== Updated Next Episode Logic =====
+        nextEpBtn.onclick = () => {
+          let season = 0, episode = 0;
+          if(cwEntry && cwEntry.seasonIndex!==undefined && cwEntry.episodeIndex!==undefined){
+            season=cwEntry.seasonIndex; episode=cwEntry.episodeIndex+1;
+          }
+          if(episode>=item.seasons[season].episodes.length){
+            season++; episode=0;
+          }
+          if(season>=item.seasons.length){
+            alert("You finished the show!");
+            continueWatching = continueWatching.filter(c=>c.title!==item.title);
+            localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+            movieModal.style.display="none";
+            document.querySelector('.nav-links button.active').click();
+            return;
+          }
+          const ep=item.seasons[season].episodes[episode];
+          window.open(ep.url,"_blank");
+          const seasonEpisode=item.seasons[season].title+" "+ep.title;
+          const idx=continueWatching.findIndex(c=>c.title===item.title);
+          if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode};
+          else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode});
           localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
-          movieModal.style.display="none";
           document.querySelector('.nav-links button.active').click();
-          return;
-        }
-        const ep=item.seasons[season].episodes[episode];
-        window.open(ep.url,"_blank");
-        const seasonEpisode=item.seasons[season].title+" "+ep.title;
+          movieModal.style.display="none";
+        };
+      }
+  
+      item.seasons.forEach((s,sIdx)=>{
+        const sDiv=document.createElement("div"); sDiv.textContent=s.title;
+        sDiv.onclick=()=>{
+          modalSeasons.innerHTML="";
+          s.episodes.forEach((ep,eIdx)=>{
+            const epDiv=document.createElement("div"); epDiv.textContent=ep.title;
+            epDiv.onclick=()=>{
+              window.open(ep.url,"_blank");
+              const seasonEpisode=s.title+" "+ep.title;
+              const idx=continueWatching.findIndex(c=>c.title===item.title);
+              if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx};
+              else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx});
+              localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+              document.querySelector('.nav-links button.active').click();
+            };
+            modalSeasons.appendChild(epDiv);
+          });
+        };
+        modalSeasons.appendChild(sDiv);
+      });
+    } else {
+      playBtn.style.display="inline-block";
+      if(fromContinueWatching) finishBtn.style.display="inline-block";
+  
+      playBtn.onclick=()=>{
+        window.open(item.url,"_blank");
         const idx=continueWatching.findIndex(c=>c.title===item.title);
-        if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode};
-        else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:season, episodeIndex:episode});
+        if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode:"Movie"};
+        else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode:"Movie"});
         localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
         document.querySelector('.nav-links button.active').click();
+      };
+  
+      // ===== Updated Finish Movie Logic =====
+      finishBtn.onclick = () => {
+        continueWatching = continueWatching.filter(c=>c.title!==item.title);
+        localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
+        finishBtn.style.display="none";
         movieModal.style.display="none";
+        document.querySelector('.nav-links button.active').click();
       };
     }
-
-    item.seasons.forEach((s,sIdx)=>{
-      const sDiv=document.createElement("div"); sDiv.textContent=s.title;
-      sDiv.onclick=()=>{
-        modalSeasons.innerHTML="";
-        s.episodes.forEach((ep,eIdx)=>{
-          const epDiv=document.createElement("div"); epDiv.textContent=ep.title;
-          epDiv.onclick=()=>{
-            window.open(ep.url,"_blank");
-            const seasonEpisode=s.title+" "+ep.title;
-            const idx=continueWatching.findIndex(c=>c.title===item.title);
-            if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx};
-            else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode, seasonIndex:sIdx, episodeIndex:eIdx});
-            localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
-            document.querySelector('.nav-links button.active').click();
-          };
-          modalSeasons.appendChild(epDiv);
-        });
-      };
-      modalSeasons.appendChild(sDiv);
-    });
-  } else {
-    playBtn.style.display="inline-block";
-    if(fromContinueWatching) finishBtn.style.display="inline-block";
-
-    playBtn.onclick=()=>{
-      window.open(item.url,"_blank");
-      const idx=continueWatching.findIndex(c=>c.title===item.title);
-      if(idx>-1) continueWatching[idx]={title:item.title, poster:item.poster, seasonEpisode:"Movie"};
-      else continueWatching.push({title:item.title, poster:item.poster, seasonEpisode:"Movie"});
-      localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
-      document.querySelector('.nav-links button.active').click();
-    };
-
-    // ===== Updated Finish Movie Logic =====
-    finishBtn.onclick = () => {
-      continueWatching = continueWatching.filter(c=>c.title!==item.title);
-      localStorage.setItem("continueWatching", JSON.stringify(continueWatching));
-      finishBtn.style.display="none";
-      movieModal.style.display="none";
-      document.querySelector('.nav-links button.active').click();
-    };
   }
-}
-
-document.getElementById("closeModal").onclick=()=>movieModal.style.display="none";
-movieModal.onclick=(e)=>{if(e.target===movieModal) movieModal.style.display="none";};
-
-// ----- FEATURED -----
-function renderFeatured(tab){
-  if(featuredInterval) clearInterval(featuredInterval);
-  featuredIndex=0;
-  const list=tab==="movies"?movies:tvShows;
-  const container=document.createElement("div"); container.className="featured-container";
-  list.forEach((item,i)=>{
-    const slide=document.createElement("div"); slide.className="featured-slide "+(i===0?"visible":"hidden");
-    slide.style.backgroundImage=`url(${item.poster})`;
-    const title=document.createElement("h1"); title.textContent=item.title;
-    const tags=document.createElement("p"); tags.textContent=item.tags;
-    slide.appendChild(title); slide.appendChild(tags);
-    const infoBtn=document.createElement("button"); infoBtn.textContent="More Info"; infoBtn.className="info";
-    infoBtn.onclick=(e)=>{e.stopPropagation(); openModal(item)};
-    slide.appendChild(infoBtn);
-    container.appendChild(slide);
+  
+  document.getElementById("closeModal").onclick=()=>movieModal.style.display="none";
+  movieModal.onclick=(e)=>{if(e.target===movieModal) movieModal.style.display="none";};
+  
+  // ----- FEATURED -----
+  function renderFeatured(tab){
+    if(featuredInterval) clearInterval(featuredInterval);
+    featuredIndex=0;
+    const list=tab==="movies"?movies:tvShows;
+    const container=document.createElement("div"); container.className="featured-container";
+    list.forEach((item,i)=>{
+      const slide=document.createElement("div"); slide.className="featured-slide "+(i===0?"visible":"hidden");
+      slide.style.backgroundImage=`url(${item.poster})`;
+      const title=document.createElement("h1"); title.textContent=item.title;
+      const tags=document.createElement("p"); tags.textContent=item.tags;
+      slide.appendChild(title); slide.appendChild(tags);
+      const infoBtn=document.createElement("button"); infoBtn.textContent="More Info"; infoBtn.className="info";
+      infoBtn.onclick=(e)=>{e.stopPropagation(); openModal(item)};
+      slide.appendChild(infoBtn);
+      container.appendChild(slide);
+    });
+    sectionsDiv.appendChild(container);
+    featuredInterval=setInterval(()=>{
+      const slides=container.querySelectorAll(".featured-slide");
+      slides[featuredIndex].classList.remove("visible"); slides[featuredIndex].classList.add("hidden");
+      featuredIndex=(featuredIndex+1)%slides.length;
+      slides[featuredIndex].classList.remove("hidden"); slides[featuredIndex].classList.add("visible");
+    },4000);
+    return list;
+  }
+  
+  // ----- CAROUSEL -----
+  function renderSection(title,list){
+    const section=document.createElement("div"); section.className="section";
+    const h2=document.createElement("h2"); h2.textContent=title;
+    const carousel=document.createElement("div"); carousel.className="carousel";
+    list.forEach(m=>{
+      const div=document.createElement("div"); div.className="carousel-item";
+      const img=document.createElement("img"); img.src=m.poster; img.alt=m.title;
+      img.onclick=()=>openModal(m);
+      div.appendChild(img); carousel.appendChild(div);
+    });
+    section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
+  }
+  
+  // ----- CONTINUE WATCHING -----
+  function renderContinueWatching(){
+    const section=document.createElement("div"); section.className="section";
+    const h2=document.createElement("h2"); h2.textContent="Continue Watching";
+    const carousel=document.createElement("div"); carousel.className="carousel";
+    continueWatching.forEach(c=>{
+      const item=movies.concat(tvShows).find(m=>m.title===c.title);
+      if(!item) return;
+      const div=document.createElement("div"); div.className="carousel-item";
+      const img=document.createElement("img"); img.src=item.poster; img.alt=item.title;
+      const span=document.createElement("span"); span.textContent=c.seasonEpisode || "Movie";
+      div.appendChild(img); div.appendChild(span);
+      div.onclick=()=>openModal(item,true);
+      carousel.appendChild(div);
+    });
+    section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
+  }
+  
+  // ----- GENRES -----
+  function renderGenres(list){
+    const genres={};
+    list.forEach(m=>{ if(!m.tags) return; m.tags.split(",").forEach(t=>{ const g=t.trim(); if(!genres[g]) genres[g]=[]; genres[g].push(m); }); });
+    for(const g in genres) if(genres[g].length>1) renderSection(g, genres[g]);
+  }
+  
+  // ----- NAV -----
+  document.querySelectorAll(".nav-links button").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".nav-links button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      sectionsDiv.innerHTML="";
+      const list=renderFeatured(btn.dataset.section);
+      renderContinueWatching();
+      renderSection("All", list);
+      renderGenres(list);
+    };
   });
-  sectionsDiv.appendChild(container);
-  featuredInterval=setInterval(()=>{
-    const slides=container.querySelectorAll(".featured-slide");
-    slides[featuredIndex].classList.remove("visible"); slides[featuredIndex].classList.add("hidden");
-    featuredIndex=(featuredIndex+1)%slides.length;
-    slides[featuredIndex].classList.remove("hidden"); slides[featuredIndex].classList.add("visible");
-  },4000);
-  return list;
-}
+  
+  document.querySelector('[data-section="movies"]').click();
 
-// ----- CAROUSEL -----
-function renderSection(title,list){
-  const section=document.createElement("div"); section.className="section";
-  const h2=document.createElement("h2"); h2.textContent=title;
-  const carousel=document.createElement("div"); carousel.className="carousel";
-  list.forEach(m=>{
-    const div=document.createElement("div"); div.className="carousel-item";
-    const img=document.createElement("img"); img.src=m.poster; img.alt=m.title;
-    img.onclick=()=>openModal(m);
-    div.appendChild(img); carousel.appendChild(div);
-  });
-  section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
-}
-
-// ----- CONTINUE WATCHING -----
-function renderContinueWatching(){
-  const section=document.createElement("div"); section.className="section";
-  const h2=document.createElement("h2"); h2.textContent="Continue Watching";
-  const carousel=document.createElement("div"); carousel.className="carousel";
-  continueWatching.forEach(c=>{
-    const item=movies.concat(tvShows).find(m=>m.title===c.title);
-    if(!item) return;
-    const div=document.createElement("div"); div.className="carousel-item";
-    const img=document.createElement("img"); img.src=item.poster; img.alt=item.title;
-    const span=document.createElement("span"); span.textContent=c.seasonEpisode || "Movie";
-    div.appendChild(img); div.appendChild(span);
-    div.onclick=()=>openModal(item,true);
-    carousel.appendChild(div);
-  });
-  section.appendChild(h2); section.appendChild(carousel); sectionsDiv.appendChild(section);
-}
-
-// ----- GENRES -----
-function renderGenres(list){
-  const genres={};
-  list.forEach(m=>{ if(!m.tags) return; m.tags.split(",").forEach(t=>{ const g=t.trim(); if(!genres[g]) genres[g]=[]; genres[g].push(m); }); });
-  for(const g in genres) if(genres[g].length>1) renderSection(g, genres[g]);
-}
-
-// ----- NAV -----
-document.querySelectorAll(".nav-links button").forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll(".nav-links button").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    sectionsDiv.innerHTML="";
-    const list=renderFeatured(btn.dataset.section);
-    renderContinueWatching();
-    renderSection("All", list);
-    renderGenres(list);
-  };
-});
-
-document.querySelector('[data-section="movies"]').click();
 });
 </script>
+</div>
 </body>
 </html>
