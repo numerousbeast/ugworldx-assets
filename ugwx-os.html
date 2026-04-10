@@ -148,20 +148,15 @@
       font-size:11px;color:var(--text-mute);display:flex;gap:16px;flex-shrink:0;}
 
     /* LAUNCHER */
-    #launcher{position:fixed;inset:0;z-index:450;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);
-      opacity:0;pointer-events:none;transition:opacity .35s cubic-bezier(.4,0,.2,1);}
+    #launcher{position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:opacity .35s cubic-bezier(.4,0,.2,1);}
     #launcher.open{opacity:1;pointer-events:all;}
-    .lp{width:100%;height:100%;display:flex;flex-direction:column;background:var(--surface);
-      transform:translateY(28px) scale(.98);transition:transform .4s cubic-bezier(.22,1,.36,1);}
-    #launcher.open .lp{transform:translateY(0) scale(1);}
-    .lh{padding:18px 24px;background:rgba(13,20,31,.9);border-bottom:1px solid var(--border);
-      display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-    .lh h2{font-size:2rem;font-weight:700;color:var(--primary);}
-    .xbtn{width:42px;height:42px;border-radius:50%;background:rgba(255,46,85,.18);border:none;color:#fff;font-size:22px;cursor:pointer;
-      transition:background .2s ease,transform .25s cubic-bezier(.34,1.56,.64,1);font-family:inherit;}
-    .xbtn:hover{background:var(--primary);transform:scale(1.12) rotate(90deg);}
+    .lp{width:100%;height:100%;display:flex;flex-direction:column;background:var(--surface);transform:none;transition:opacity .3s ease;}
+    #launcher.open .lp{transform:none;}
+    .lh{padding:calc(18px + env(safe-area-inset-top,0px)) 24px 18px;background:rgba(13,20,31,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:72px;}
+    .lh h2{margin:0;font-size:1.8rem;line-height:1.2;}
+    .xbtn{width:48px;height:48px;border-radius:50%;background:rgba(255,46,85,.18);border:none;color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
     .xbtn:active{transform:scale(.9);}
-    .lc{flex:1;display:flex;overflow:hidden;}
+    .lc{flex:1;display:flex;overflow:hidden;min-height:0;}
     .sb{width:280px;background:linear-gradient(to bottom,#0d141f,#090f1a);padding:28px 22px;
       border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
     .sb input{width:100%;padding:13px 16px;border-radius:12px;background:var(--surface-h);border:1px solid var(--border);
@@ -174,7 +169,7 @@
     .sb button:hover{background:rgba(255,46,85,.28);transform:translateX(5px);}
     .sb button:active{transform:translateX(2px) scale(.97);}
     .sb button.act{background:var(--primary);}
-    .agc{flex:1;overflow-y:scroll;padding:32px 36px 80px;scrollbar-width:thin;scrollbar-color:var(--primary) var(--surface-h);}
+    .agc{flex:1;overflow-y:auto;padding:32px 36px 80px;min-height:0;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--primary) var(--surface-h);}
     .agc::-webkit-scrollbar{width:6px;}
     .agc::-webkit-scrollbar-thumb{background:var(--primary);border-radius:10px;}
     .ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:28px;align-content:start;}
@@ -505,7 +500,8 @@
     <div class="boot-logo" style="font-size:72px; font-weight:900; color:var(--primary);">UGWX-OS</div>
   </div>
 
-  <div class="boot-sub" style="font-size:24px; margin-top:20px;">version 3</div>
+  <div class="boot-sub" style="font-size:24px; margin-top:20px;">version 0.5</div>
+  <div class="boot-sub" style="font-size:24px; margin-top:20px;">Ninth Configuration</div>
   <div class="boot-bar-wrap" style="margin-top:30px; width:300px; height:8px; background-color:var(--surface-h); border-radius:4px;">
     <div class="boot-bar" style="width:0%; height:100%; background-color:var(--primary); border-radius:4px;"></div>
   </div>
@@ -1051,10 +1047,11 @@ const htmlBase="https://cdn.jsdelivr.net/gh/gn-math/html@main";
 const PH="https://placehold.co/90x90/1a1a2e/ff2e55?text=App";
 
 const customApps=[
-  {id:1001,name:"Google Doc",   cover:"https://iili.io/qARpZPI.png",    url:"https://docs.google.com/document/d/1uTnM5rMOZLN43rqOaw0phgJY5hpPFXsyCNSFaJuIDbY/edit?tab=t.0#heading=h.5nvb5qyc2kcs",    type:"app"},
-  {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/index%20(18).html", type:"app"},
+  {id:1001,name:"Google Doc",   cover:"https://iili.io/qARpZPI.png",    url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@latest/doc.html",    type:"app"},
+  {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
   {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
-  {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/index%20(20).html", type:"app"},
+  {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie.html", type:"app"},
+  {id:1005,name:"HTML Editer",cover:"https://cdn-icons-png.flaticon.com/512/7909/7909930.png", url:"https://www.w3schools.com/html/tryit.asp?filename=tryhtml_editor", type:"app"},
 ];
 
 let zones=[];
@@ -1244,22 +1241,30 @@ function openCustomApp(app){
     }
   });
 }
-function openZone(zone){
-  const isInt=!zone.url.startsWith("http");
-  let url=zone.url;
-  if(isInt)url=zone.url.replace("{HTML_URL}",htmlBase).replace("{COVER_URL}",coverBase)+"?t="+Date.now();
-  mkWin({id:zone.id,title:zone.name,w:1100,h:680,onopen:(_,wc)=>{
-    if(!isInt){const i=document.createElement("iframe");i.src=url;i.allowFullscreen=true;wc.appendChild(i);return;}
-    wc.innerHTML=`<div style="color:#fff;padding:3rem;text-align:center;">loading ${zone.name}…</div>`;
-    fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();}).then(raw=>{
-      let fx=raw.trim();
-      if(!fx.toLowerCase().includes("<!doctype"))fx=`<!DOCTYPE html><html><head><meta charset="UTF-8"><base href="${htmlBase}/"><style>body,html{margin:0;height:100%;overflow:hidden;background:#000;color:#fff}</style></head><body>${fx}</body></html>`;
-      const blob=new Blob([fx],{type:"text/html"}),burl=URL.createObjectURL(blob);
-      const i=document.createElement("iframe");i.src=burl;i.allowFullscreen=true;wc.innerHTML="";wc.appendChild(i);
-    }).catch(err=>{wc.innerHTML=`<div style="color:#f87171;padding:3rem;text-align:center;">load failed<br><small>${err.message}</small></div>`;});
-  }});
-}
+function openZone(app){
 
+  mkWin({
+    id: app.id,
+    title: app.name,
+    w: 1100,
+    h: 680,
+    onopen: (_, wc) => {
+
+      wc.innerHTML = "";
+
+      // ALWAYS iframe for external URLs
+      const iframe = document.createElement("iframe");
+      iframe.src = app.url;
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      iframe.style.border = "none";
+      iframe.allowFullscreen = true;
+
+      wc.appendChild(iframe);
+    }
+  });
+
+}
 // ── CHAT APP ─────────────────────────────────────────────────
 const FIREBASE_URL="https://gnoschat-default-rtdb.firebaseio.com";
 const CHAT_KEY="gnos_chat_msgs";
