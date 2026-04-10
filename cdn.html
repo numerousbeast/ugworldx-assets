@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CDN HTML Loader</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    #container {
+      max-width: 500px;
+      width: 90%;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #60a5fa;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #3b82f6;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 1rem;
+    }
+    a {
+      color: #60a5fa;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h2>CDN HTML Loader</h2>
+    <input
+      type="text"
+      id="cdnInput"
+      placeholder="Enter CDN HTML URL (e.g., https://cdn.jsdelivr.net/...)"
+    />
+    <button onclick="startLoading()">Open Page</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    function isValidURL(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function loadCDNPage(url) {
+      const status = document.getElementById("status");
+      status.textContent = "Loading...";
+
+      try {
+        const response = await fetch(url + "?t=" + Date.now(), {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP Error: " + response.status);
+        }
+
+        const htmlText = await response.text();
+
+        // Add <base> tag to fix relative paths
+        const baseTag = `<base href="${url.substring(0, url.lastIndexOf('/') + 1)}">`;
+        const modifiedHTML = htmlText.replace(
+          /<head([^>]*)>/i,
+          `<head$1>${baseTag}`
+        );
+
+        // Replace the current document with the fetched HTML
+        document.open();
+        document.write(modifiedHTML);
+        document.close();
+
+      } catch (error) {
+        document.body.innerHTML = `
+          <div id="container">
+            <h2>Failed to Load Page</h2>
+            <p>${error.message}</p>
+            <button onclick="location.reload()">Try Again</button>
+            <p>
+              <a href="${url}" target="_blank">Open in a new tab</a>
+            </p>
+          </div>
+        `;
+        console.error(error);
+      }
+    }
+
+    function startLoading() {
+      const url = document.getElementById("cdnInput").value.trim();
+
+      if (!isValidURL(url)) {
+        document.getElementById("status").textContent =
+          "Invalid URL. Please try again.";
+        return;
+      }
+
+      loadCDNPage(url);
+    }
+
+    // Allow pressing Enter to submit
+    document.getElementById("cdnInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        startLoading();
+      }
+    });
+  </script>
+</body>
+</html>
