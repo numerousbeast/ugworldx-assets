@@ -1,44 +1,42 @@
-{
-  "movies": [
-    {
-      "title": "Sample Movie",
-      "year": "2025",
-      "tags": "Action, Adventure",
-      "description": "An example movie with an external video link.",
-      "poster": "https://via.placeholder.com/300x450",
-      "url": "https://example.com/sample-movie"
-    },
-    {
-      "title": "Comedy Night",
-      "year": "2023",
-      "tags": "Comedy",
-      "description": "A fun comedy film.",
-      "poster": "https://via.placeholder.com/300x450",
-      "url": "https://example.com/comedy-night"
-    }
-  ],
-  "tvShows": [
-    {
-      "title": "Sample Show",
-      "year": "2024",
-      "tags": "Drama",
-      "description": "An example TV show.",
-      "poster": "https://via.placeholder.com/300x450",
-      "seasons": [
-        {
-          "title": "Season 1",
-          "episodes": [
-            {
-              "title": "Episode 1",
-              "url": "https://example.com/sample-show-s01e01"
-            },
-            {
-              "title": "Episode 2",
-              "url": "https://example.com/sample-show-s01e02"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+const movies = [
+  {
+    title: "The Legend of Aang: The Last Airbender",
+    year: 2026,
+    tags: "Action, Adventure, Animation",
+    section: "movies",
+    description: "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands.",
+    poster: "https://iili.io/BOWPb2a.md.jpg",
+    url: "https://drive.google.com/file/d/12WV1nygCtHNlioXgLYT7IW4yeHNdmYoi/view"
+  }
+];
+
+const tvShows = [
+  {
+    title: "Abbott Elementary",
+    year: 2021,
+    tags: "Comedy",
+    description: "Teachers working in a public school.",
+    poster: "https://m.media-amazon.com/images/I/8138HMFdVoL.jpg",
+    seasons: [
+      {
+        title: "S1",
+        url: "#",
+        episodes: [
+          { title: "E1", url: "https://drive.google.com/file/d/1SiFwITvaZ_Fnq9jQAIWzUZsYuHDkCtsE/view" },
+          { title: "E2", url: "https://drive.google.com/file/d/1HSDGYP2bgUcrcMwRAlf-Y_8wsSAOz-bk/view" },
+          { title: "E3", url: "https://drive.google.com/file/d/1ASquaANl8GEg7S9xHO7QoBTCODf7fek1/view" },
+          { title: "E4", url: "https://drive.google.com/file/d/1sZJqBXh35XQ3cVgD4Wl6R_r417y-OqKP/view" }
+        ]
+      },
+      {
+        title: "S2",
+        url: "#",
+        episodes: [
+          { title: "E1", url: "#" },
+          { title: "E2", url: "#" },
+          { title: "E3", url: "#" }
+        ]
+      }
+    ]
+  }
+];
