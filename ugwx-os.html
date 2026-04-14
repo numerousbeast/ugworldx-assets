@@ -35,7 +35,7 @@
     .boot-hint{position:absolute;bottom:28px;font-size:11px;color:rgba(136,161,196,.35);letter-spacing:2px;}
 
     /* PARTICLES */
-    #pcv{position:fixed;inset:0;pointer-events:none;z-index:0;}
+    pcv{position:fixed;inset:0;pointer-events:none;z-index:0;}
 
     /* STATUSBAR */
     #statusbar{position:fixed;top:0;left:0;right:0;height:44px;z-index:600;
@@ -619,10 +619,6 @@
             <label class="sw-toggle"><input type="checkbox" id="tog-cursor" onchange="toggleCursor(this.checked)" checked><div class="sw-toggle-track"></div><div class="sw-toggle-thumb"></div></label>
           </div>
           <div class="sw-row" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05);">
-            <div><div class="sw-card-title">Particle Background</div><div class="sw-card-desc">Floating dots with mouse interaction</div></div>
-            <label class="sw-toggle"><input type="checkbox" id="tog-particles" onchange="toggleParticles(this.checked)" checked><div class="sw-toggle-track"></div><div class="sw-toggle-thumb"></div></label>
-          </div>
-          <div class="sw-row" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05);">
             <div><div class="sw-card-title">Dock Labels</div><div class="sw-card-desc">Show app names on dock hover</div></div>
             <label class="sw-toggle"><input type="checkbox" id="tog-labels" onchange="toggleDockLabels(this.checked)" checked><div class="sw-toggle-track"></div><div class="sw-toggle-thumb"></div></label>
           </div>
@@ -1052,7 +1048,7 @@ const customApps=[
   {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie.html", type:"app"},
   {id:1005,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
-  {id:1005,name:"Celestial (Browser)",cover:"https://github.com/JustJxrdanWasDefinetlyTaken/celestial/raw/main/public/assets/img/logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
+  {id:1006,name:"Celestial (Browser)",cover:"https://github.com/JustJxrdanWasDefinetlyTaken/celestial/raw/main/public/assets/img/logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
 ];
 
 let zones=[];
@@ -1543,48 +1539,52 @@ document.getElementById("launcher").onclick=e=>{if(e.target===document.getElemen
 
 // ── CUSTOM CURSOR ─────────────────────────────────────────────
 (()=>{
-  const dot=document.getElementById("cur-dot");
-  const ring=document.getElementById("cur-ring");
-  let rx=0,ry=0,tx=0,ty=0;
-  let lastTrail=0;
+  const dot = document.getElementById("cur-dot");
+  const ring = document.getElementById("cur-ring");
 
-  document.addEventListener("mousemove",e=>{
-    tx=e.clientX; ty=e.clientY;
-    dot.style.left=tx+"px"; dot.style.top=ty+"px";
+  let rx = 0, ry = 0, tx = 0, ty = 0;
 
-    // trail particles
-    const now=Date.now();
-    if(now-lastTrail>40){
-      lastTrail=now;
-      const t=document.createElement("div");
-      t.className="cur-trail-dot";
-      const s=Math.random()*4+3;
-      t.style.cssText=`width:${s}px;height:${s}px;left:${tx}px;top:${ty}px;`;
-      document.body.appendChild(t);
-      t.addEventListener("animationend",()=>t.remove(),{once:true});
-    }
+  document.addEventListener("mousemove", e => {
+    tx = e.clientX;
+    ty = e.clientY;
+
+    // main cursor dot
+    dot.style.left = tx + "px";
+    dot.style.top = ty + "px";
   });
 
-  // ring smoothly follows
+  // smooth ring follow
   (function animRing(){
-    rx+=(tx-rx)*.14; ry+=(ty-ry)*.14;
-    ring.style.left=rx+"px"; ring.style.top=ry+"px";
+    rx += (tx - rx) * 0.14;
+    ry += (ty - ry) * 0.14;
+
+    ring.style.left = rx + "px";
+    ring.style.top = ry + "px";
+
     requestAnimationFrame(animRing);
   })();
 
-  // click ripple
-  document.addEventListener("mousedown",e=>{
-    dot.style.transform="translate(-50%,-50%) scale(.6)";
-    ring.style.transform="translate(-50%,-50%) scale(.7)";
+  // click effect
+  document.addEventListener("mousedown", () => {
+    dot.style.transform = "translate(-50%,-50%) scale(.6)";
+    ring.style.transform = "translate(-50%,-50%) scale(.7)";
   });
-  document.addEventListener("mouseup",()=>{
-    dot.style.transform="translate(-50%,-50%) scale(1)";
-    ring.style.transform="translate(-50%,-50%) scale(1)";
+
+  document.addEventListener("mouseup", () => {
+    dot.style.transform = "translate(-50%,-50%) scale(1)";
+    ring.style.transform = "translate(-50%,-50%) scale(1)";
   });
 
   // hide when leaving window
-  document.addEventListener("mouseleave",()=>{dot.style.opacity="0";ring.style.opacity="0";});
-  document.addEventListener("mouseenter",()=>{dot.style.opacity="1";ring.style.opacity="1";});
+  document.addEventListener("mouseleave", () => {
+    dot.style.opacity = "0";
+    ring.style.opacity = "0";
+  });
+
+  document.addEventListener("mouseenter", () => {
+    dot.style.opacity = "1";
+    ring.style.opacity = "1";
+  });
 })();
 
 // ── NOTEPAD APP ───────────────────────────────────────────────
