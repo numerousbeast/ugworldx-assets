@@ -1,0 +1,44 @@
+{
+  "movies": [
+    {
+      "title": "Sample Movie",
+      "year": "2025",
+      "tags": "Action, Adventure",
+      "description": "An example movie with an external video link.",
+      "poster": "https://via.placeholder.com/300x450",
+      "url": "https://example.com/sample-movie"
+    },
+    {
+      "title": "Comedy Night",
+      "year": "2023",
+      "tags": "Comedy",
+      "description": "A fun comedy film.",
+      "poster": "https://via.placeholder.com/300x450",
+      "url": "https://example.com/comedy-night"
+    }
+  ],
+  "tvShows": [
+    {
+      "title": "Sample Show",
+      "year": "2024",
+      "tags": "Drama",
+      "description": "An example TV show.",
+      "poster": "https://via.placeholder.com/300x450",
+      "seasons": [
+        {
+          "title": "Season 1",
+          "episodes": [
+            {
+              "title": "Episode 1",
+              "url": "https://example.com/sample-show-s01e01"
+            },
+            {
+              "title": "Episode 2",
+              "url": "https://example.com/sample-show-s01e02"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
