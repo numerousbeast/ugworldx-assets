@@ -1,21 +1,14 @@
-// =========================
-// MOVIES (CDN LIBRARY)
-// =========================
 const movies = [
   {
     title: "The Legend of Aang: The Last Airbender",
     year: 2026,
     tags: "Action, Adventure, Animation",
-    section: "movies",
     description: "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands.",
     poster: "https://iili.io/BOWPb2a.md.jpg",
     url: "https://drive.google.com/file/d/12WV1nygCtHNlioXgLYT7IW4yeHNdmYoi/view"
   }
 ];
 
-// =========================
-// TV SHOWS (CDN LIBRARY)
-// =========================
 const tvShows = [
   {
     title: "Abbott Elementary",
@@ -31,16 +24,7 @@ const tvShows = [
           { title: "E1", url: "https://drive.google.com/file/d/1SiFwITvaZ_Fnq9jQAIWzUZsYuHDkCtsE/view" },
           { title: "E2", url: "https://drive.google.com/file/d/1HSDGYP2bgUcrcMwRAlf-Y_8wsSAOz-bk/view" },
           { title: "E3", url: "https://drive.google.com/file/d/1ASquaANl8GEg7S9xHO7QoBTCODf7fek1/view" },
-          { title: "E4", url: "https://drive.google.com/file/d/1sZJqBXh35XQ3cVgD4Wl6R_r417y-OqKP/view" },
-          { title: "E5", url: "https://drive.google.com/file/d/1GMCgvDJHvkXd_EVDPpEV7TT3Rg1FXx6F/view" },
-          { title: "E6", url: "https://drive.google.com/file/d/1Q9QqFuwVZMnm7lA7XHKo_8KxfikyjG1h/view" },
-          { title: "E7", url: "https://drive.google.com/file/d/1jrucEdIMaq7hkL2MuFGams6BoiSISzCA/view" },
-          { title: "E8", url: "https://drive.google.com/file/d/1IHO_d6LfJz8DODJqUYVSWfMVW6jfFFmK/view" },
-          { title: "E9", url: "https://drive.google.com/file/d/1Ym_DW1SbuzEAfvZdqWwqhBRhC85brgMJ/view" },
-          { title: "E10", url: "https://drive.google.com/file/d/1tQaqOH91WhjqZP-RWtprAN3geyQueDIn/view" },
-          { title: "E11", url: "https://drive.google.com/file/d/161buZFYXtNYCM0aOOlqpXnsRLFUbsAvM/view" },
-          { title: "E12", url: "https://drive.google.com/file/d/1t3-HSwMU1zwxTcQRgCoEjMaHkEPXbSTN/view" },
-          { title: "E13", url: "https://drive.google.com/file/d/1koRA2GDJuTjBorFy9mf4ahzRl91v1fVq/view" }
+          { title: "E4", url: "https://drive.google.com/file/d/1sZJqBXh35XQ3cVgD4Wl6R_r417y-OqKP/view" }
         ]
       },
       {
@@ -49,23 +33,7 @@ const tvShows = [
         episodes: [
           { title: "E1", url: "#" },
           { title: "E2", url: "#" },
-          { title: "E3", url: "#" },
-          { title: "E4", url: "#" },
-          { title: "E5", url: "#" },
-          { title: "E6", url: "#" },
-          { title: "E7", url: "#" },
-          { title: "E8", url: "#" },
-          { title: "E9", url: "#" },
-          { title: "E10", url: "#" },
-          { title: "E11", url: "#" },
-          { title: "E12", url: "#" },
-          { title: "E13", url: "#" },
-          { title: "E14", url: "#" },
-          { title: "E15", url: "#" },
-          { title: "E16", url: "#" },
-          { title: "E17", url: "#" },
-          { title: "E18", url: "#" },
-          { title: "E19", url: "#" }
+          { title: "E3", url: "#" }
         ]
       }
     ]
