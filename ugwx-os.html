@@ -851,6 +851,54 @@ function ctxAction(a){
 
 // ── WINDOW SYSTEM ────────────────────────────────────────────
 let topZ=40;
+const dock = document.getElementById("dock");
+
+function minWin(w){
+  const id = w.dataset.id;
+
+  // 🧠 If fullscreen/maximized → restore to normal first
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+
+    const prev = JSON.parse(w.dataset.prev || "{}");
+    if(prev.left){
+      w.style.left = prev.left;
+      w.style.top = prev.top;
+      w.style.width = prev.width;
+      w.style.height = prev.height;
+    }
+
+    w.dataset.maximized = "0";
+  }
+
+  // ✅ NOW save correct normal state
+  localStorage.setItem("win-state-" + id, JSON.stringify({
+    left: w.style.left,
+    top: w.style.top,
+    width: w.style.width,
+    height: w.style.height,
+    maximized: "0"
+  }));
+
+  const rect = w.getBoundingClientRect();
+
+  w.style.position = "fixed";
+  w.style.left = rect.left + "px";
+  w.style.top = rect.top + "px";
+  w.style.width = rect.width + "px";
+  w.style.height = rect.height + "px";
+
+  requestAnimationFrame(()=>{
+    w.style.transition = "all 0.45s cubic-bezier(.25,.8,.25,1)";
+    w.style.transform = "scale(0.1) translateY(200px)";
+    w.style.opacity = "0";
+  });
+
+  setTimeout(()=>{
+    w.style.display = "none";
+    w.classList.add("minimized");
+  }, 450);
+}
 function mkWin({id,title,w=920,h=600,content,onopen}){
   const ex=document.querySelector(`.win[data-id="${id}"]`);
   if(ex){ex.style.zIndex=++topZ;return ex;}
@@ -860,7 +908,7 @@ function mkWin({id,title,w=920,h=600,content,onopen}){
   win.innerHTML=`
     <div class="tb">
       <div class="tb-dot tb-close" onclick="closeWin(this.closest('.win'))"></div>
-      <div class="tb-dot tb-min"></div>
+      <div class="tb-dot tb-min" onclick="minWin(this.closest('.win'))"></div>
       <div class="tb-dot tb-max" onclick="toggleMax(this.closest('.win'))"></div>
       <div class="tbt">${title}</div>
     </div>
@@ -875,12 +923,41 @@ function mkWin({id,title,w=920,h=600,content,onopen}){
 }
 function closeWin(w){w.classList.add("closing");w.addEventListener("animationend",()=>w.remove(),{once:true});}
 function toggleMax(w){
-  if(w.dataset.maximized==="1"){
-    w.style.cssText=w.dataset.prevStyle||"";w.dataset.maximized="0";
-  }else{
-    w.dataset.prevStyle=w.style.cssText;
-    w.style.cssText=`width:100%;height:calc(100% - 44px);left:0;top:44px;z-index:${++topZ};border-radius:0;`;
-    w.dataset.maximized="1";
+  // If already fullscreen → exit fullscreen
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    w.dataset.maximized = "0";
+
+    // restore previous size
+    const prev = JSON.parse(w.dataset.prev || "{}");
+    if(prev.left){
+      w.style.left = prev.left;
+      w.style.top = prev.top;
+      w.style.width = prev.width;
+      w.style.height = prev.height;
+    }
+
+  } else {
+    // save current position
+    w.dataset.prev = JSON.stringify({
+      left: w.style.left,
+      top: w.style.top,
+      width: w.style.width,
+      height: w.style.height
+    });
+
+    // request real fullscreen
+    if (w.requestFullscreen) {
+      w.requestFullscreen();
+    }
+
+    // make sure it fills screen visually too
+    w.style.left = "0px";
+    w.style.top = "0px";
+    w.style.width = "100vw";
+    w.style.height = "100vh";
+
+    w.dataset.maximized = "1";
   }
 }
 function makeDraggable(win){
@@ -914,6 +991,37 @@ function makeResizable(win){
   });
   document.addEventListener("mouseup",()=>{resizing=false;});
 }
+function restoreWin(id){
+  const w = document.querySelector(`.win[data-id="${id}"]`);
+  if(!w) return;
+
+  const saved = JSON.parse(localStorage.getItem("win-state-" + id) || "{}");
+
+  w.style.display = "block";
+  w.classList.remove("minimized");
+
+  // 🔥 RESET animation junk
+  w.style.transform = "none";
+  w.style.opacity = "1";
+  w.style.transition = "none";
+
+  if(saved.left){
+    w.style.left = saved.left;
+    w.style.top = saved.top;
+    w.style.width = saved.width;
+    w.style.height = saved.height;
+  }
+
+  // re-enable animation AFTER reset
+  requestAnimationFrame(()=>{
+    w.style.transition = "all 0.45s cubic-bezier(.25,.8,.25,1)";
+  });
+}
+document.addEventListener("click", () => {
+  document.querySelectorAll(".win.minimized").forEach(w=>{
+    restoreWin(w.dataset.id);
+  });
+});
 
 // ── WALLPAPER ────────────────────────────────────────────────
 function loadWp(){
@@ -1047,9 +1155,10 @@ const customApps=[
   {id:1001,name:"Google Doc",   cover:"https://iili.io/qARpZPI.png",    url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@latest/doc.html",    type:"app"},
   {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
   {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
-  {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie.html", type:"app"},
+  {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
   {id:1005,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
-  {id:1006,name:"Celestial (Browser)",cover:"https://github.com/JustJxrdanWasDefinetlyTaken/celestial/raw/main/public/assets/img/logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
+  {id:1006,name:"Wythos AI",cover:"https://github.com/JustJxrdanWasDefinetlyTaken/celestial/raw/main/public/assets/img/logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
+  {id:10076,name:"Dogeub (Browser)",cover:"https://iili.io/BgEMjDb.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
 ];
 
 let zones=[];
