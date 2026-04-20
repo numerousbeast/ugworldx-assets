@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/17985/17985542.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loading</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    #status {
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Loading...</div>
+
+  <script>
+    const CDN_URL = "https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugwx-os.html"; 
+
+    function isValidURL(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function requestFullScreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) return elem.requestFullscreen();
+      if (elem.webkitRequestFullscreen) return elem.webkitRequestFullscreen();
+      if (elem.msRequestFullscreen) return elem.msRequestFullscreen();
+      return Promise.resolve();
+    }
+
+    async function loadCDNPage(url) {
+      const status = document.getElementById("status");
+      status.textContent = "Loading...";
+
+      try {
+        const response = await fetch(url + "?t=" + Date.now(), {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP Error: " + response.status);
+        }
+
+        let htmlText = await response.text();
+
+        const baseHref = url.substring(0, url.lastIndexOf('/') + 1);
+        const baseTag = `<base href="${baseHref}">`;
+
+        if (/<head[^>]*>/i.test(htmlText)) {
+          htmlText = htmlText.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`);
+        } else {
+          htmlText = `<head>${baseTag}</head>` + htmlText;
+        }
+
+        document.open();
+        document.write(htmlText);
+        document.close();
+
+        setTimeout(() => {
+          const scripts = document.querySelectorAll("script");
+          scripts.forEach(oldScript => {
+            const newScript = document.createElement("script");
+            if (oldScript.src) {
+              newScript.src = oldScript.src;
+            } else {
+              newScript.textContent = oldScript.textContent;
+            }
+            document.body.appendChild(newScript);
+          });
+        }, 100);
+
+      } catch (error) {
+        document.body.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:Arial;text-align:center;">
+            <div>
+              <h2>Failed to Load Page</h2>
+              <p>${error.message}</p>
+              <button onclick="location.reload()" style="padding:10px 20px;border:none;border-radius:8px;background:#60a5fa;color:#000;font-weight:bold;cursor:pointer;">Try Again</button>
+              <p><a href="${url}" target="_blank" style="color:#60a5fa;">Open in a new tab</a></p>
+            </div>
+          </div>
+        `;
+        console.error(error);
+      }
+    }
+
+    // 🚀 Auto-run on page load
+    window.onload = async () => {
+      if (!isValidURL(CDN_URL)) {
+        document.body.innerHTML = "<h2 style='color:white;'>Invalid URL</h2>";
+        return;
+      }
+
+      try {
+        await requestFullScreen();
+      } catch (e) {
+        console.warn("Fullscreen request denied:", e);
+      }
+
+      await loadCDNPage(CDN_URL);
+    };
+  </script>
+</body>
+</html>
