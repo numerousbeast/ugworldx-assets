@@ -562,7 +562,7 @@
 <div id="launcher">
   <div class="lp">
     <div class="lh">
-      <h2>play store</h2>
+      <h2>App Store</h2>
       <button class="xbtn" onclick="closeLauncher()">×</button>
     </div>
     <div class="lc">
@@ -1185,7 +1185,7 @@ function renderDock(){
     d.innerHTML=`<img src="${img}" onerror="this.src='${PH}'">${dot?'<div class="di-dot"></div>':""}${badge!==null?`<div class="di-badge">${badge}</div>`:""}`;
     d.onclick=fn;dock.appendChild(d);
   };
-  add("Play Store","https://iili.io/qumwoEN.png",()=>openTab("store"));
+  add("App Store","https://iili.io/qumwoEN.png",()=>openTab("store"));
   // Chat always pre-installed
   //add("GN Chat","https://iili.io/qumaSzF.png",()=>openChatApp(),true, unreadCount||null);
   add("Settings","https://iili.io/qumPlb2.png",openSettings);
