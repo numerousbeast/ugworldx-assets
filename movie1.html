@@ -92,13 +92,12 @@ button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:p
     <div class="counter">
   <div>Movies: <span id="movieCount">0</span></div>
   <div>TV Shows: <span id="tvCount">0</span></div>
-  <div>🔋 <span id="batteryLevel">Loading...</span></div>
 </div>
   </div>
 
   <div class="nav-links">
     <button data-section="movies">Movies</button>
-    <button data-section="tv">TV Shows</button>
+    <button data-section="tv">TV Shows (NOT FINISHED!)</button>
   </div>  
 
   <input id="searchInput" placeholder="Search">
@@ -149,7 +148,8 @@ button { margin-top:10px; padding:10px; border:none; border-radius:4px; cursor:p
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const movies = [
-          {title: "The Legend of Aang: The Last Airbender", year: 2026, tags: "Action, Adventure, Animation", section: "movies", description: "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands.", poster: "https://iili.io/BOWPb2a.md.jpg", url: "https://drive.google.com/file/d/12WV1nygCtHNlioXgLYT7IW4yeHNdmYoi/view"},
+          {title: "The Super Mario Galaxy Movie", year: 2026, tags: "Family, Special, Adventure", section: "movies", description: "Mario, Luigi, Peach, and Toad travel into space to rescue Princess Rosalina from Bowser Jr.. Bowser Jr. kidnaps Rosalina to fuel a universe-destroying weapon to unshrink his father, Bowser, who is imprisoned following the first movie", poster: "https://imgc.allpostersimages.com/img/posters/nintendo-the-super-mario-galaxy-movie-2026-key-art_u-L-FAIZOR0.jpg", url: "https://drive.google.com/file/d/1tYJaB3pVi6FiKRl7FsaxHwgmJ2sAuQZx/view?usp=drive_link"},
+          {title: "The Legend of Aang: The Last Airbender", year: 2026, tags: "Action, Special,  Adventure, Animation", section: "movies", description: "Avatar Aang, the world's last Airbender, learns of an ancient power that could save his culture from extinction. With the help of his friends, he embarks on a global quest to find it before it falls into the wrong hands.", poster: "https://iili.io/BOWPb2a.md.jpg", url: "https://drive.google.com/file/d/1c-peQ4Jp21WWvwYL2wu4rAev-M1hfO5Q/view?usp=sharing"},
           {title: "Avengers Endgame", year: 2019, tags: "Action, Adventure, Superhero", section: "movies", description: "The Avengers assemble for a final stand against Thanos to save the universe.", poster: "https://resizing.flixster.com/fC7nU6iTRQk02tS0SDS1ylx-G34=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2QxZjE5ZDgzLTRiY2MtNDFkYS04NWQ4LTRkYzc1ZTAwNWE2NC53ZWJw", url: "https://drive.google.com/file/d/1ehi9tidOYHb1RMldxtBw6-L3UhyEKVm9/view"},
           {title: "Ant-Man and The Wasp: Quantumania", year: 2023, tags: "Action, Adventure, Superhero", section: "movies", description: "Scott Lang and Hope Van Dyne explore the Quantum Realm while facing Kang the Conqueror.", poster: "https://resizing.flixster.com/_0Mhf0W_vdhwlaqOaUDX6JiReKA=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzE0OGY2MTIxLTE1MDEtNDI5YS1hYzVlLWYyMzExYjBmZTlhMC5qcGc=", url: "https://drive.google.com/file/d/1AW3Zm8256tzZ-37lmgYmIGse4knu8IdA/view"},
           {title: "Avengers Infinity War", year: 2018, tags: "Action, Adventure, Superhero", section: "movies", description: "The Avengers try to stop Thanos from collecting all Infinity Stones and destroying half the universe.", poster: "https://resizing.flixster.com/CXOXbOpLNL1NNkXTQu-4Rgvcszs=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzLzM0NGRkMDM2LWVjNDQtNGZlMC04NGM3LWZkMzQ2Njg1OTUyNi53ZWJw", url: "https://drive.google.com/file/d/1oKDbw6zCdSRKRbABn6nKf_4LGsA3ftwL/view"},
@@ -278,14 +278,11 @@ document.addEventListener("DOMContentLoaded", () => {
           {title: "Mufasa", year: 2024, tags: "Animation, Drama, Adventure", section: "movies", description: "The untold story of Mufasa's rise in the Pride Lands.", poster: "https://resizing.flixster.com/QZb6NO1GECV8zRbHNi12AUs75CI=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2E2MmQyYzQxLWZhMTgtNGU0NC04MTI5LTY1ZmU0ZjBiYWNkZC5qcGc=", url: "https://drive.google.com/file/d/1uQXNlwz-_1PwGdnJqTGUswBhJWgH8zMP/view?usp=drive_link"},
           {title: "Mulan", year: 2020, tags: "Action, Adventure, Drama", section: "movies", description: "A young woman disguises herself as a soldier to save her father and country.", poster: "https://resizing.flixster.com/1DiUvdzzuWw-zuk7Fw6ZImBVc5E=/206x305/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p21715217_p_v10_aa.jpg", url: "https://drive.google.com/file/d/1ye-qQ6ZmBW98Xab4sjDJw1oxmUw_piBz/view?usp=sharing"},
           {title: "Norbit", year: 2007, tags: "Comedy, Romance", section: "movies", description: "A mild-mannered man navigates life with his overbearing wife.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p163211_p_v8_at.jpg", url: "https://drive.google.com/file/d/1PUIzjrlfRen4M7CqwIcmVdABNBpMWt5s/view"},
-          {title: "Pacific Rim", year: 2013, tags: "Action, Sci-Fi", section: "movies", description: "Giant robots battle massive monsters to save humanity.", poster: "", url: ""},
-          {title: "Pacific Rim Uprising", year: 2018, tags: "Action, Sci-Fi", section: "movies", description: "A new generation of pilots faces an even bigger kaiju threat.", poster: "", url: ""},
-          {title: "Puss in Boots: The Last Wish", year: 2022, tags: "Animation, Adventure, Comedy", section: "movies", description: "Puss in Boots goes on a quest to restore his nine lives.", poster: "", url: ""},
-          {title: "Power Rangers: The Movie", year: 1995, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Power Rangers battle a new villain threatening Earth.", poster: "", url: ""},
-          {title: "Peanuts", year: 2015, tags: "Animation, Family, Comedy", section: "movies", description: "Charlie Brown and Snoopy face hilarious adventures and life lessons.", poster: "", url: ""},
-          {title: "Polar Express", year: 2004, tags: "Animation, Adventure, Family", section: "movies", description: "A magical train ride takes a boy to the North Pole on Christmas Eve.", poster: "", url: ""},
-          {title: "Paw Patrol: The Mighty Movie", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "The Paw Patrol pups get superpowers and face a new villain.", poster: "", url: ""},
-          {title: "Power Rangers", year: 2017, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Teenagers gain powers and must save the world from evil forces.", poster: "", url: ""},
+          {title: "Power Rangers: The Movie", year: 1995, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "The Power Rangers battle a new villain threatening Earth.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p16919_p_v8_au.jpg", url: "https://drive.google.com/file/d/1e-f3lzrTrRV3iVT7Ft-KLSd6fHbyUT2i/view"},
+          {title: "Peanuts", year: 2015, tags: "Animation, Family, Comedy", section: "movies", description: "Charlie Brown and Snoopy face hilarious adventures and life lessons.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p11394221_p_v8_ad.jpg", url: "https://drive.google.com/file/d/16Ze08q_XKmANPNYreDVZnEbZEZTSLwOa/view?usp=share_link"},
+          {title: "Polar Express", year: 2004, tags: "Animation, Adventure, Family", section: "movies", description: "A magical train ride takes a boy to the North Pole on Christmas Eve.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p35087_p_v8_aq.jpg", url: "https://drive.google.com/file/d/19KYYKqlEQyEuUTUQv32U53WoIDvKTRrx/view?usp=sharing"},
+          {title: "Paw Patrol: The Mighty Movie", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "The Paw Patrol pups get superpowers and face a new villain.", poster: "https://resizing.flixster.com/yZLRkBZluopPFp8CdRcj-z6__hg=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2RkZWQwZGVjLWFkZDUtNDY4Ni1hNzU3LWQ4ZTJjMTYzMTExZC5qcGc=", url: "https://drive.google.com/file/d/13PKSmF1dnXkByra1B5NLarzB_ux4cU0T/view?usp=drive_link"},
+          {title: "Power Rangers", year: 2017, tags: "Action, Adventure, Sci-Fi", section: "movies", description: "Teenagers gain powers and must save the world from evil forces.", poster: "https://resizing.flixster.com/MiGX6ugrCULlMe1h4I0hyRWVpZo=/fit-in/352x330/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p12658931_p_v10_ap.jpg", url: "https://drive.google.com/file/d/1bAS1zgiXsYJVXzhra9Fg2PHWBbVDU8lJ/view?usp=sharing"},
           {title: "Piece By Piece", year: 2023, tags: "Drama, Music", section: "movies", description: "A young artist navigates fame, family, and love in the music industry.", poster: "", url: ""},
           {title: "Pixels", year: 2015, tags: "Action, Comedy, Sci-Fi", section: "movies", description: "Arcade game characters attack Earth and heroes must stop them.", poster: "", url: ""},
           {title: "Rise of the Planet of the Apes", year: 2011, tags: "Action, Sci-Fi, Drama", section: "movies", description: "A scientist’s experiments lead to the rise of intelligent apes.", poster: "", url: ""},
@@ -439,12 +436,12 @@ document.addEventListener("DOMContentLoaded", () => {
           {title: "Who Framed Roger Rabbit", year: 1988, tags: "Animation, Comedy, Crime", section: "movies", description: "A detective helps a cartoon rabbit clear his name in a live-action world.", poster: "", url: ""},
           {title: "Wreck-It-Ralph", year: 2012, tags: "Animation, Adventure, Comedy", section: "movies", description: "A video game villain goes on a journey to prove he can be a hero.", poster: "", url: ""},
           {title: "Wreck-It-Ralph Breaks The Internet", year: 2018, tags: "Animation, Adventure, Comedy", section: "movies", description: "Ralph and Vanellope venture into the vast world of the internet to save their game.", poster: "", url: ""},
-          {title: "White Men Can’t Jump (1992)", year: 1992, tags: "Comedy, Sport", section: "movies", description: "Two street basketball hustlers team up to con their way to cash and fame.", poster: "", url: ""},
-          {title: "White Men Can’t Jump (2023)", year: 2023, tags: "Comedy, Sport", section: "movies", description: "A modern retelling of two basketball hustlers teaming up for fame and fortune.", poster: "", url: ""},
-          {title: "Wish", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "A young girl makes a wish that changes the fate of her kingdom.", poster: "", url: ""},
-          {title: "West Side Story (1961)", year: 1961, tags: "Drama, Musical, Romance", section: "movies", description: "A musical retelling of Romeo and Juliet in the streets of New York City.", poster: "", url: ""},
-          {title: "West Side Story (2021)", year: 2021, tags: "Drama, Musical, Romance", section: "movies", description: "A modern remake of the classic musical with new choreography and music.", poster: "", url: ""},
-          {title: "Willy Wonka & The Chocolate Factory", year: 1971, tags: "Adventure, Family, Fantasy", section: "movies", description: "Charlie Bucket visits Willy Wonka's mysterious chocolate factory and discovers magical wonders.", poster: "", url: ""}
+          {title: "White Men Can’t Jump (1992)", year: 1992, tags: "Comedy, Sport", section: "movies", description: "Two street basketball hustlers team up to con their way to cash and fame.", poster: "https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p13866_p_v11_ac.jpg", url: "https://drive.google.com/file/d/1MXghG0Dnn9XJ9iSGE6-bIuM7vysIxBfy/view?usp=drive_link"},
+          {title: "White Men Can’t Jump (2023)", year: 2023, tags: "Comedy, Sport", section: "movies", description: "A modern retelling of two basketball hustlers teaming up for fame and fortune.", poster: "https://resizing.flixster.com/5qn0Z4SWNPQ9L3HW8jJ4GafA7wM=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2FkNGU4NzU4LTNmYTMtNDY4Ny05ZDA5LWRhOTIwZWM4MTJmNy5qcGc=", url: "https://drive.google.com/file/d/1-WrSZaYE3Sq_bHifzyd4UJP7tc6Ea0Ur/view?usp=drive_link"},
+          {title: "Wish", year: 2023, tags: "Animation, Adventure, Family", section: "movies", description: "A young girl makes a wish that changes the fate of her kingdom.", poster: "https://resizing.flixster.com/qIk5F8LNkRDAxu6Tn6XvYJ1rVMg=/ems.cHJkLWVtcy1hc3NldHMvbW92aWVzL2MyODNiYmIxLTYyOWMtNDJiNi1iZmZlLTE4ZGQ2MGQwZGFiNS5qcGc=", url: "https://drive.google.com/file/d/1KOmgE1jMV0jT2QkWFFd3ieEzwf4GbVOw/view?usp=drive_link"},
+          {title: "West Side Story (1961)", year: 1961, tags: "Drama, Musical, Romance", section: "movies", description: "A musical retelling of Romeo and Juliet in the streets of New York City.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAtAZd1aMuOGk6ZcaG6EPpZc_u5zuKRIvmGO8UbV7JqvQsmUyw-FtuXXGdvYFZmt1IwS-nNk1xBOCfW6ZKiFhedch4HHLOfQtvad7WUOA&s=10", url: "https://drive.google.com/file/d/1CBGr82HWTP2XM-HJPURXFGV1uqE5-ip-/view?usp=drive_link"},
+          {title: "West Side Story (2021)", year: 2021, tags: "Drama, Musical, Romance", section: "movies", description: "A modern remake of the classic musical with new choreography and music.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdDJIHZDi0-Gom6P9IZmuom2cflwEehT4TA9yexz0_MaTVmTtFvrStPIU8EPB2eHZFZzjy7eCuTtpNVVuzD4eV8PIjwrwNhsNUb7EGsQ&s=10", url: "https://drive.google.com/file/d/1XCfKDI8cKvYQO2UGFOKBe5qlmcL8Vsry/view?usp=drive_link"},
+          {title: "Willy Wonka & The Chocolate Factory", year: 1971, tags: "Adventure, Family, Fantasy", section: "movies", description: "Charlie Bucket visits Willy Wonka's mysterious chocolate factory and discovers magical wonders.", poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ96DT9W-mtrPRh_8Uxei_9m9Px6i-xkZxNhSrtHx1qp6c86qEsUgNQBvlYJ0njViJRwNMDPA&s=10", url: "https://drive.google.com/file/d/1oeD_wjeRQck_3uRIOw9ZXIxG5PuUIPVD/view?usp=drive_link"}
     ];
 const tvShows = [
 {
@@ -459,11 +456,6 @@ const tvShows = [
       {title:"E5", url:"https://drive.google.com/file/d/1GMCgvDJHvkXd_EVDPpEV7TT3Rg1FXx6F/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/1Q9QqFuwVZMnm7lA7XHKo_8KxfikyjG1h/view?usp=drive_link"}, {title:"E7", url:"https://drive.google.com/file/d/1jrucEdIMaq7hkL2MuFGams6BoiSISzCA/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/1IHO_d6LfJz8DODJqUYVSWfMVW6jfFFmK/view?usp=drive_link"},
       {title:"E9", url:"https://drive.google.com/file/d/1Ym_DW1SbuzEAfvZdqWwqhBRhC85brgMJ/view?usp=drive_link"}, {title:"E10", url:"https://drive.google.com/file/d/1tQaqOH91WhjqZP-RWtprAN3geyQueDIn/view?usp=drive_link"}, {title:"E11", url:"https://drive.google.com/file/d/161buZFYXtNYCM0aOOlqpXnsRLFUbsAvM/view?usp=drive_link"}, {title:"E12", url:"https://drive.google.com/file/d/1t3-HSwMU1zwxTcQRgCoEjMaHkEPXbSTN/view?usp=drive_link"}, {title:"E13", url:"https://drive.google.com/file/d/1koRA2GDJuTjBorFy9mf4ahzRl91v1fVq/view?usp=drive_link"}
     ]},
-    {title:"S2", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},{title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"},{title:"E11", url:"#"}, {title:"E12", url:"#"}, {title:"E13", url:"#"},
-      {title:"E14", url:"#"}, {title:"E15", url:"#"}, {title:"E16", url:"#"}, {title:"E17", url:"#"}, {title:"E18", url:"#"}, {title:"E19", url:"#"},
-    ]}
   ]
 },
 {
@@ -491,25 +483,6 @@ const tvShows = [
   tags:"Animation",
   description:"Spin-off adventure.",
   poster:"https://resizing.flixster.com/DnUMTEgPgrwxfoRoJD_GYeK5qXo=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vZjFhM2QzNGQtZWE5NS00YTI0LWFhNmUtZTE5YmVlNmYyNjdlLmpwZw==",
-  seasons:[
-    {title:"S1", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
-    ]},
-    {title:"S2", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
-    ]}
-  ]
-},
-{
-  title:"Arcane",
-  year:2021,
-  tags:"Action, Animation",
-  description:"Conflict between Piltover and Zaun.",
-  poster:"https://m.media-amazon.com/images/I/61KyJNmk8BL._AC_UF894,1000_QL80_.jpg",
   seasons:[
     {title:"S1", url:"#", episodes:[
       {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
@@ -721,14 +694,19 @@ const tvShows = [
   poster:"https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p19396843_b_v10_ae.jpg",
   seasons:[
     {title:"S1", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+      {title:"E1", url:"https://drive.google.com/file/d/1CoMgg3dNQJdZOF61DMckEHn0LSxMzlPT/view?usp=sharing"}, {title:"E2", url:"https://drive.google.com/file/d/1idsFVN2UDFrgBqHi6iI39MIpbAshd0qd/view?usp=sharing"}, {title:"E3", url:"https://drive.google.com/file/d/16lKMXQozGLrxRQjQmDgdMnbO_XWhb72T/view?usp=sharing"},
+      {title:"E4", url:"https://drive.google.com/file/d/18oxnzb5DcAGyOkkTM8i7QgjEIwJmh0fp/view?usp=sharing"}, {title:"E5", url:"https://drive.google.com/file/d/1tA7JYyEKFcmkSznDIGqJqu-LVV9IBs4V/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/18dbGT6a83z6ycpPN9aZvnEjY-2c5QzyC/view?usp=drive_link"},
+      {title:"E7", url:"https://drive.google.com/file/d/1zTqYkMYHIR8DNV-tOe4BaMm_XjlYEAK3/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/15PoR9KNQeEHuF3dGxUKOD3TnQlxybFWe/view?usp=drive_link"}
     ]},
     {title:"S2", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+      {title:"E1", url:"https://drive.google.com/file/d/1zBgkjcupSKH9nqImaSMd_uotpaESODsa/view?usp=drive_link"}, {title:"E2", url:"https://drive.google.com/file/d/10EiMZ6BuQ4cDdV0N7TjCRsT5kiBYu6m8/view?usp=drive_link"}, {title:"E3", url:"https://drive.google.com/file/d/1eBsEAvvpXwHAwYjOk_4bpwwzZzo4c8q5/view?usp=drive_link"},
+      {title:"E4", url:"https://drive.google.com/file/d/1RHi-1HU1vUtgk9GVUMN21EQmkk56rzDB/view?usp=drive_link"}, {title:"E5", url:"https://drive.google.com/file/d/1qGwDjKZ5-fqxZsCULRcPvQ1QJSRBcipJ/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/1Tjge9pZgKW_E-owB_hG6k7w3clC78uOq/view?usp=drive_link"},
+      {title:"E7", url:"https://drive.google.com/file/d/1ckKI5tn8lvjb1LvvA-T2W0nRG2Ze8Hrb/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/1Ys5cvG0hbB-ahXc2c4SfUc-qtzWLdNkX/view?usp=drive_link"}
+    ]},
+    {title:"S3", url:"#", episodes:[
+      {title:"E1", url:"https://drive.google.com/file/d/1zE5rD0kAsbRL1ABzQ_NYmrh6PMddTqBW/view?usp=drive_link"}, {title:"E2", url:"https://drive.google.com/file/d/1xssgad7jrQluALCJ4oIcQt6EXfYr8cTK/view?usp=drive_link"}, {title:"E3", url:"https://drive.google.com/file/d/1osNi0fOSu2J2LiLpVZh9DYCw_52L3uWO/view?usp=drive_link"},
+      {title:"E4", url:"https://drive.google.com/file/d/1-C1e5CnYYTMgvQoeJJNnD_rWo2y0z0G9/view?usp=drive_link"}, {title:"E5", url:"https://drive.google.com/file/d/1pfUQwP8AaR2Y3yRgNAQBBWUmAX5Kx2Wu/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/1EQtAuPNEU5Z8l8-vleFHfxHl4-0ffPJE/view?usp=drive_link"},
+      {title:"E7", url:"https://drive.google.com/file/d/1TITfDrfbmxc2ofxbDVBkz0QrtARoHZ1I/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/1aFCK6Uxdy2uAvuKv3OPDGPdwQhqCjP06/view?usp=drive_link"}
     ]}
   ]
 },
@@ -740,15 +718,10 @@ const tvShows = [
   poster:"https://resizing.flixster.com/gsGd4m0Fm2campmJ9ZyaYXWPS1A=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vUlRUVjEzMDE3Ni53ZWJw",
   seasons:[
     {title:"S1", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
+      {title:"E1", url:"https://drive.google.com/file/d/1pwDkTNc-PEax2vh6EtvC2WAJP7kmqVfP/view?usp=drive_link"}, {title:"E2", url:"https://drive.google.com/file/d/1hpuNMeJ5Bh2571aEMvtl6VQDmwnP1hCD/view?usp=drive_link"}, {title:"E3", url:"https://drive.google.com/file/d/1rLfoIjioIV1MZcGmKySnjb6zuJUMOfx8/view?usp=drive_link"},
+      {title:"E4", url:"https://drive.google.com/file/d/1yndr5waNHa25rolNnBS23L2YDa-Vb32J/view?usp=drive_link"}, {title:"E5", url:"https://drive.google.com/file/d/1iJoa_A6xex90ry4MzVbkr5bS6yGu3D2D/view?usp=drive_link"}, {title:"E6", url:"https://drive.google.com/file/d/1-QKIrnlFpvAF4tTA_D0Zo0thDSNtXtsq/view?usp=drive_link"},
+      {title:"E7", url:"https://drive.google.com/file/d/1njRYOi4tujCDv_sRpuYZHJbnzPlancMU/view?usp=drive_link"}, {title:"E8", url:"https://drive.google.com/file/d/1ToqBPN7r5ndKRzO3lobmmXsJhpyHJSOB/view?usp=drive_link"}, {title:"E9", url:"https://drive.google.com/file/d/1sFiDrWNPNIHadAM_XWrqSEZhYrUTFE6v/view?usp=drive_link"}, {title:"E10", url:"https://drive.google.com/file/d/1cXny7RcoS9icsHi_6GtDoqX9yGSn4RHX/view?usp=drive_link"}, {title:"E11", url:"https://drive.google.com/file/d/1E9ePuw7WN7KCsbQcmwg4XnguJ2n-4EJr/view?usp=drive_link"}
     ]},
-    {title:"S2", url:"#", episodes:[
-      {title:"E1", url:"#"}, {title:"E2", url:"#"}, {title:"E3", url:"#"},
-      {title:"E4", url:"#"}, {title:"E5", url:"#"}, {title:"E6", url:"#"},
-      {title:"E7", url:"#"}, {title:"E8", url:"#"}, {title:"E9", url:"#"}, {title:"E10", url:"#"}
-    ]}
   ]
 },
 {
@@ -864,6 +837,7 @@ let featuredIndex=0;
 let fromContinueWatching=false;
 
 const sectionsDiv=document.getElementById("sections");
+const searchInput = document.getElementById("searchInput");
 const movieModal=document.getElementById("movieModal");
 const modalTitle=document.getElementById("modalTitle");
 const modalMeta=document.getElementById("modalMeta");
@@ -1156,6 +1130,27 @@ document.querySelectorAll(".nav-links button").forEach(btn=>{
     renderSection("All", list);
     renderGenres(list);
   };
+});
+
+let timeout;
+searchInput.addEventListener("input", () => {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    const q = searchInput.value.toLowerCase();
+
+    sectionsDiv.innerHTML = "";
+
+    // ✅ FIXED (removed anime)
+    const all = movies.concat(tvShows);
+
+    const filtered = all.filter(m =>
+      m.title.toLowerCase().includes(q)
+    );
+
+    // ✅ FIXED (use your existing function)
+    renderSection("Search Results", filtered);
+
+  }, 300);
 });
 
 document.querySelector('[data-section="movies"]').click();
