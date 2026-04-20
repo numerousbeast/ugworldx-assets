@@ -48,7 +48,7 @@
     #sl{flex:1;display:flex;gap:20px;align-items:center;}
     #sr{display:flex;align-items:center;gap:20px;}
     .bbar{width:46px;height:17px;border:2px solid var(--text-mute);border-radius:5px;overflow:hidden;}
-    .blvl{height:100%;background:linear-gradient(to right,#4ade80,#22c55e);transition:width .8s;}
+    .blvl{height:100%;background:linear-gradient(to right,#4ade80,#FFFFFF);transition:width .8s;}
     #clock{font-weight:600;}
 
     /* LOGIN */
@@ -855,7 +855,24 @@ function ctxAction(a){
 // ── WINDOW SYSTEM ────────────────────────────────────────────
 let topZ=40;
 const dock = document.getElementById("dock");
+document.addEventListener("fullscreenchange", () => {
+  const w = document.querySelector(".win[data-maximized='1']");
+  if (!w) return;
 
+  // If fullscreen was exited manually (ESC / tab switch)
+  if (!document.fullscreenElement) {
+    const prev = JSON.parse(w.dataset.prev || "{}");
+
+    if (prev.left) {
+      w.style.left = prev.left;
+      w.style.top = prev.top;
+      w.style.width = prev.width;
+      w.style.height = prev.height;
+    }
+
+    w.dataset.maximized = "0";
+  }
+});
 function minWin(w){
   const id = w.dataset.id;
 
