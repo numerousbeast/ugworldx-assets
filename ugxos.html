@@ -267,12 +267,26 @@
       color:var(--text-mute);font-size:18px;cursor:pointer;
       transition:background .2s,color .2s,transform .2s cubic-bezier(.34,1.56,.64,1);}
     .sw-close:hover{background:rgba(255,255,255,.25);color:#fff;transform:scale(1.12) rotate(90deg);}
-    .sw-body{flex:1;overflow-y:auto;padding:24px 28px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}
+    .sw-body{
+  flex:1;
+  overflow-y:auto;
+  padding:24px 28px;
+  display:flex;
+  justify-content:center;   /* ⭐ centers panels horizontally */
+  align-items:flex-start;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.3) transparent;
+}
     .sw-body::-webkit-scrollbar{width:4px;}
     .sw-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:4px;}
 
     /* settings panels */
-    .sw-panel{display:none;animation:swPanelIn .3s cubic-bezier(.22,1,.36,1) both;}
+    .sw-panel{
+      display:none;
+      width:100%;
+      max-width:780px;  /* ⭐ THIS is what stops left alignment */
+      animation:swPanelIn .3s cubic-bezier(.22,1,.36,1) both;
+    }
     .sw-panel.active{display:block;}
     @keyframes swPanelIn{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:none;}}
 
@@ -582,15 +596,75 @@
       <p>UGWX-OS · build 2025</p>
     </div>
     <div class="sw-nav-items">
-      <div class="sw-nav-item active" data-panel="account" onclick="swNav(this)"><span class="nav-icon">👤</span>Account</div>
+            <div class="sw-nav-item active" data-panel="account" onclick="swNav(this)"><span class="nav-icon">👤</span>Account</div>
       <div class="sw-nav-item" data-panel="appearance" onclick="swNav(this)"><span class="nav-icon">🎨</span>Appearance</div>
       <div class="sw-nav-item" data-panel="wallpaper" onclick="swNav(this)"><span class="nav-icon">🖼</span>Wallpaper</div>
       <div class="sw-nav-item" data-panel="system" onclick="swNav(this)"><span class="nav-icon">🖥</span>System</div>
+      <div class="sw-nav-item" data-panel="guide" onclick="swNav(this)"><span class="nav-icon">📜 </span>Guide</div>
+      <div class="sw-nav-item" data-panel="patchnotes" onclick="swNav(this)"><span class="nav-icon">📝 </span>Patch Notes</div>
       <div class="sw-nav-item" data-panel="danger" onclick="swNav(this)"><span class="nav-icon">⚠️</span>Reset</div>
     </div>
     <div class="sw-nav-footer"><div class="sw-nav-version">UGWX-OS v3 · 2026</div></div>
   </div>
-
+  <!-- PATCH NOTES PANEL -->
+  <div class="sw-panel" id="sw-panel-patchnotes">
+    <div class="sw-card">
+      <div class="sw-section-label">Latest Updates</div>
+  
+      <div class="sw-card-title">UGWX-OS v1.0</div>
+      <div class="sw-card-desc">
+        • New settings UI redesign<br>
+        • Improved window snapping & fullscreen behavior<br>
+        • Faster startup animation<br>
+        • Bug fixes in dock restore system
+        • added patch notes and guide
+      </div>
+    </div>
+  
+    <div class="sw-card">
+      <div class="sw-section-label">Previous Versions</div>
+  
+      <div class="sw-card-title">v0.9</div>
+      <div class="sw-card-desc">
+        • Added live wallpapers<br>
+        • Fixed app minimization glitch
+      </div>
+    </div>
+  </div>
+  <!-- GUIDE PANEL -->
+  <div class="sw-panel" id="sw-panel-guide">
+    <div class="sw-card">
+      <div class="sw-section-label">Getting Started</div>
+  
+      <div class="sw-card-title">Basics</div>
+      <div class="sw-card-desc">
+        • Click apps in the dock to open them<br>
+        • Drag windows to move them<br>
+        • Use Red button to Close<br>
+        • Click the Green to maximize<br>
+      </div>
+    </div>
+    
+    <div class="sw-card">
+      <div class="sw-card-title">Store</div>
+      <div class="sw-card-desc">
+        • in the [🏪 store] page, you scroll through and download games<br>
+        • in the [📱 apps] page, you can download apps<br>
+        • in the [📦 owned] page, is all the apps/games you own you can open and delete them<br>
+      </div>
+    </div>
+  
+    <div class="sw-card">
+      <div class="sw-section-label">Tips</div>
+  
+      <div class="sw-card-title">Shortcuts</div>
+      <div class="sw-card-desc">
+        • ESC → exit fullscreen<br>
+        • you can download images and videos on here, go to files<br>
+        • Settings saves automatically
+      </div>
+    </div>
+  </div>
   <!-- main area -->
   <div class="sw-main">
     <div class="sw-topbar">
@@ -928,7 +1002,6 @@ function mkWin({id,title,w=920,h=600,content,onopen}){
   win.innerHTML=`
     <div class="tb">
       <div class="tb-dot tb-close" onclick="closeWin(this.closest('.win'))"></div>
-      <div class="tb-dot tb-min" onclick="minWin(this.closest('.win'))"></div>
       <div class="tb-dot tb-max" onclick="toggleMax(this.closest('.win'))"></div>
       <div class="tbt">${title}</div>
     </div>
@@ -1037,13 +1110,8 @@ function restoreWin(id){
     w.style.transition = "all 0.45s cubic-bezier(.25,.8,.25,1)";
   });
 }
-document.addEventListener("click", () => {
-  document.querySelectorAll(".win.minimized").forEach(w=>{
-    restoreWin(w.dataset.id);
-  });
-});
 
-// ── WALLPAPER ────────────────────────────────────────────────
+// ── WALLPAPER ───────────────────────────────────<div class="tb-dot tb-min" onclick="minWin(this.closest('.win'))"></div>
 function loadWp(){
   const wp=localStorage.getItem("gnos_wp"),d=document.getElementById("desktop");
   if(wp){d.style.backgroundImage=`url(${wp})`;d.classList.add("wp");}
@@ -1166,9 +1234,9 @@ function closeSettings(){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const zonesURL="https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json";
-const coverBase="https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-const htmlBase="https://cdn.jsdelivr.net/gh/gn-math/html@main";
+const zonesURL="https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json";
+const coverBase="https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
+const htmlBase="https://cdn.jsdelivr.net/gh/freebuisness/html@main";
 const PH="https://placehold.co/90x90/1a1a2e/ff2e55?text=App";
 
 const customApps=[
@@ -1176,9 +1244,8 @@ const customApps=[
   {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
   {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
-  {id:1005,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
-  {id:1006,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
-  {id:1007,name:"Dogeub (Browser)",cover:"https://iili.io/BgEMjDb.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
+  {id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
+  {id:1005,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
   {id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
   {id:1009,name:"Source Viewer",cover:"https://placehold.co/90x90/FFFFFF/000?text=Source%20Viewer", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/source.html", type:"app"},
 ];
@@ -1224,7 +1291,7 @@ function openTab(tab){
     requestAnimationFrame(()=>requestAnimationFrame(()=>l.classList.add("open")));
   }
   renderSidebar();
-  if(tab==="apps")renderCustomApps();else if(tab==="owned")renderOwned();else renderStore();
+  if(tab==="apps")renderCustomApps();else if(tab==="owned")renderOwned();else renderCustomApps();
 }
 function renderSidebar(){
   const sb=document.getElementById("sidebar");sb.innerHTML=`<input type="text" placeholder="🔍 search..." oninput="filterCards(this.value)"/>`;
@@ -1234,6 +1301,31 @@ function renderSidebar(){
   });
 }
 function filterCards(q){document.querySelectorAll(".ac").forEach(c=>c.style.display=c.dataset.name.includes(q.toLowerCase())?"flex":"none");}
+function renderStore(){
+  const g=document.getElementById("grid");
+  if(!zones.length){
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:5rem;color:var(--text-mute);"><div style="font-size:3rem;margin-bottom:16px;">🏪</div>Store loading…<br><small style="opacity:.5;margin-top:8px;display:block;">If this persists, download and open as a local .html file</small></div>';
+    return;
+  }
+  g.innerHTML="";
+  zones.forEach(z=>{
+    const inst=installed.includes(z.id);
+    const c=document.createElement("div");c.className="ac";c.dataset.name=z.name.toLowerCase();
+    const img=document.createElement("img");
+    img.src=z.cover.replace("{COVER_URL}",coverBase)||PH;
+    img.loading="lazy";img.onerror=()=>{img.src=PH;};
+    img.style.cssText="width:90px;height:90px;border-radius:22px;object-fit:cover;";
+    const nm=document.createElement("span");nm.textContent=z.name;
+    const btn=document.createElement("button");
+    btn.className="ibtn"+(inst?" inst":"");
+    btn.textContent=inst?"✓ installed":"install";
+    btn.onclick=e=>{e.stopPropagation();if(!inst)installZone(z.id,e);};
+    c.appendChild(img);c.appendChild(nm);c.appendChild(btn);
+    c.onclick=()=>inst?openZone(z):installZone(z.id,{stopPropagation:()=>{}});
+    c.style.animationDelay=(Array.from(g.children).length*40)+"ms";
+    g.appendChild(c);
+  });
+}
 function renderCustomApps(){
   const g=document.getElementById("grid");g.innerHTML="";
   customApps.forEach(a=>{
@@ -1370,29 +1462,20 @@ function openCustomApp(app){
     }
   });
 }
-function openZone(app){
-
-  mkWin({
-    id: app.id,
-    title: app.name,
-    w: 1100,
-    h: 680,
-    onopen: (_, wc) => {
-
-      wc.innerHTML = "";
-
-      // ALWAYS iframe for external URLs
-      const iframe = document.createElement("iframe");
-      iframe.src = app.url;
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.style.border = "none";
-      iframe.allowFullscreen = true;
-
-      wc.appendChild(iframe);
-    }
-  });
-
+function openZone(zone){
+  const isInt=!zone.url.startsWith("http");
+  let url=zone.url;
+  if(isInt)url=zone.url.replace("{HTML_URL}",htmlBase).replace("{COVER_URL}",coverBase)+"?t="+Date.now();
+  mkWin({id:zone.id,title:zone.name,w:1100,h:680,onopen:(_,wc)=>{
+    if(!isInt){const i=document.createElement("iframe");i.src=url;i.allowFullscreen=true;wc.appendChild(i);return;}
+    wc.innerHTML=`<div style="color:#fff;padding:3rem;text-align:center;">loading ${zone.name}…</div>`;
+    fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();}).then(raw=>{
+      let fx=raw.trim();
+      if(!fx.toLowerCase().includes("<!doctype"))fx=`<!DOCTYPE html><html><head><meta charset="UTF-8"><base href="${htmlBase}/"><style>body,html{margin:0;height:100%;overflow:hidden;background:#000;color:#fff}</style></head><body>${fx}</body></html>`;
+      const blob=new Blob([fx],{type:"text/html"}),burl=URL.createObjectURL(blob);
+      const i=document.createElement("iframe");i.src=burl;i.allowFullscreen=true;wc.innerHTML="";wc.appendChild(i);
+    }).catch(err=>{wc.innerHTML=`<div style="color:#f87171;padding:3rem;text-align:center;">load failed<br><small>${err.message}</small></div>`;});
+  }});
 }
 // ── CHAT APP ─────────────────────────────────────────────────
 const FIREBASE_URL="https://gnoschat-default-rtdb.firebaseio.com";
