@@ -593,7 +593,7 @@
   <div class="sw-nav">
     <div class="sw-nav-header">
       <h2>⚙ Settings</h2>
-      <p>UGWX-OS · build 2025</p>
+      <p>UGWX-OS · build 2026</p>
     </div>
     <div class="sw-nav-items">
             <div class="sw-nav-item active" data-panel="account" onclick="swNav(this)"><span class="nav-icon">👤</span>Account</div>
@@ -1240,9 +1240,7 @@ const htmlBase="https://cdn.jsdelivr.net/gh/freebuisness/html@main";
 const PH="https://placehold.co/90x90/1a1a2e/ff2e55?text=App";
 
 const customApps=[
-  {id:1001,name:"Google Doc",   cover:"https://iili.io/qARpZPI.png",    url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@latest/doc.html",    type:"app"},
   {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
-  {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
   {id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
   {id:1005,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
@@ -1259,7 +1257,7 @@ localStorage.setItem("gnos_cinst",JSON.stringify(custInst));
 
 let vc=parseInt(localStorage.getItem("gnos_vc")||"0")+1;
 localStorage.setItem("gnos_vc",vc);
-//document.getElementById("vc").textContent=`VISITS ON THIS ACCOUNT: ${vc}`;
+//document.getElementById("vc").textContent=`VISITS ON THIS ACCOUNT: ${vc}`;  {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
 
 // ── DOCK ──────────────────────────────────────────────────────
 function renderDock(){
@@ -2316,7 +2314,7 @@ function startPlasma(ctx,cv){
       }}
     }}
     ctx.putImageData(id,0,0);
-    t+=0.018;
+    t+=0.1;
     liveWpRaf=requestAnimationFrame(loop);
   };loop();
 }
