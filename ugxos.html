@@ -887,7 +887,7 @@ function notify(title,msg,icon="🔔"){
   const n=document.createElement("div");n.className="notif";
   n.innerHTML=`<div class="notif-icon">${icon}</div><div><div class="notif-title">${title}</div><div class="notif-msg">${msg}</div></div>`;
   area.appendChild(n);
-  setTimeout(()=>{n.classList.add("out");n.addEventListener("animationend",()=>n.remove(),{once:true});},3800);
+  setTimeout(()=>{n.classList.add("out");n.addEventListener("animationend",()=>n.remove(),{once:true});},5800);
 }
 
 // ── CLOCK / BATTERY ──────────────────────────────────────────
