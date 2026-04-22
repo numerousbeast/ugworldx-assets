@@ -259,7 +259,7 @@
     .sw-nav-version{font-size:10px;color:rgba(136,161,196,.35);text-align:center;letter-spacing:1px;}
 
     /* settings main content */
-    .sw-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .sw-main{flex:1;display:flex;flex-direction:column;overflow-y: auto;}
     .sw-topbar{height:52px;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);
       display:flex;align-items:center;padding:0 20px;flex-shrink:0;gap:10px;}
     .sw-topbar-title{flex:1;font-size:15px;font-weight:700;color:var(--text);}
@@ -662,7 +662,10 @@
         • ESC → exit fullscreen<br>
         • you can download images and videos on here, go to files<br>
         • Settings saves automatically
+
+      
       </div>
+  
     </div>
   </div>
   <!-- main area -->
@@ -1703,7 +1706,7 @@ async function initOS(){
   const cached=localStorage.getItem("gnos_zones_cache");
   if(cached){try{zones=JSON.parse(cached);}catch(e){}}
   renderDock();
-  notify("welcome back",`UGWX-OS loaded · ${account.username}`,"👾");
+  notify("welcome back",`UGWX-OS loaded · ${account.username}`,"👋");
 
   // then try fresh fetch and update cache
   try{
@@ -1737,7 +1740,7 @@ function createAccount(){
   localStorage.setItem("gnos_acct",JSON.stringify(account));
   showDesktop();
   initOS();
-  notify("account created",`welcome, ${u}! 🎉`,"✨");
+  notify("account created",`welcome, ${u}! Go check out settings to get started! 🎉`,"✨");
 }
 
 if(account){
