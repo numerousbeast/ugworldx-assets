@@ -12,9 +12,9 @@
     :root {
       --bg:#000814; --surface:#0d141f; --surface-h:#172233;
       --text:#e9f1ff; --text-mute:#88a1c4;
-      --primary:#ffffff; --primary-d:#e5e5e5;
+      --primary:#00eaff;   --primary-d:#00c8d8;
       --glass:rgba(18,26,42,0.85); --border:rgba(110,130,170,0.25);
-      --glow:0 0 36px rgba(255,255,255,0.38); --radius:20px;
+      --glow:0 0 36px rgba(0,234,255,0.45); --radius:20px;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
@@ -67,7 +67,7 @@
       transition:border-color .22s ease, box-shadow .22s ease, background .22s ease;font-family:inherit;}
     .card input:focus{border-color:var(--primary);box-shadow:0 0 0 5px rgba(255,255,255,.22);background:rgba(23,34,51,.9);}
     .card button{width:100%;padding:15px;margin-top:16px;border:none;border-radius:14px;font-weight:600;font-size:15px;
-      background:var(--primary);color:#fff;cursor:pointer;
+      background:var(--primary);color:#000000;cursor:pointer;
       transition:background .25s ease,transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease;font-family:inherit;}
     .card button:hover{background:var(--primary-d);transform:translateY(-3px);box-shadow:0 12px 28px -8px rgba(255,255,255,.5);}
     .card button:active{transform:translateY(0) scale(.97);}
@@ -259,7 +259,7 @@
     .sw-nav-version{font-size:10px;color:rgba(136,161,196,.35);text-align:center;letter-spacing:1px;}
 
     /* settings main content */
-    .sw-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .sw-main{flex:1;display:flex;flex-direction:column;overflow-y: auto;}
     .sw-topbar{height:52px;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border);
       display:flex;align-items:center;padding:0 20px;flex-shrink:0;gap:10px;}
     .sw-topbar-title{flex:1;font-size:15px;font-weight:700;color:var(--text);}
@@ -267,12 +267,26 @@
       color:var(--text-mute);font-size:18px;cursor:pointer;
       transition:background .2s,color .2s,transform .2s cubic-bezier(.34,1.56,.64,1);}
     .sw-close:hover{background:rgba(255,255,255,.25);color:#fff;transform:scale(1.12) rotate(90deg);}
-    .sw-body{flex:1;overflow-y:auto;padding:24px 28px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}
+    .sw-body{
+  flex:1;
+  overflow-y:auto;
+  padding:24px 28px;
+  display:flex;
+  justify-content:center;   /* ⭐ centers panels horizontally */
+  align-items:flex-start;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.3) transparent;
+}
     .sw-body::-webkit-scrollbar{width:4px;}
     .sw-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:4px;}
 
     /* settings panels */
-    .sw-panel{display:none;animation:swPanelIn .3s cubic-bezier(.22,1,.36,1) both;}
+    .sw-panel{
+      display:none;
+      width:100%;
+      max-width:780px;  /* ⭐ THIS is what stops left alignment */
+      animation:swPanelIn .3s cubic-bezier(.22,1,.36,1) both;
+    }
     .sw-panel.active{display:block;}
     @keyframes swPanelIn{from{opacity:0;transform:translateX(12px);}to{opacity:1;transform:none;}}
 
@@ -579,18 +593,81 @@
   <div class="sw-nav">
     <div class="sw-nav-header">
       <h2>⚙ Settings</h2>
-      <p>UGWX-OS · build 2025</p>
+      <p>UGWX-OS · build 2026</p>
     </div>
     <div class="sw-nav-items">
-      <div class="sw-nav-item active" data-panel="account" onclick="swNav(this)"><span class="nav-icon">👤</span>Account</div>
+            <div class="sw-nav-item active" data-panel="account" onclick="swNav(this)"><span class="nav-icon">👤</span>Account</div>
       <div class="sw-nav-item" data-panel="appearance" onclick="swNav(this)"><span class="nav-icon">🎨</span>Appearance</div>
       <div class="sw-nav-item" data-panel="wallpaper" onclick="swNav(this)"><span class="nav-icon">🖼</span>Wallpaper</div>
       <div class="sw-nav-item" data-panel="system" onclick="swNav(this)"><span class="nav-icon">🖥</span>System</div>
+      <div class="sw-nav-item" data-panel="guide" onclick="swNav(this)"><span class="nav-icon">📜 </span>Guide</div>
+      <div class="sw-nav-item" data-panel="patchnotes" onclick="swNav(this)"><span class="nav-icon">📝 </span>Patch Notes</div>
       <div class="sw-nav-item" data-panel="danger" onclick="swNav(this)"><span class="nav-icon">⚠️</span>Reset</div>
     </div>
     <div class="sw-nav-footer"><div class="sw-nav-version">UGWX-OS v3 · 2026</div></div>
   </div>
+  <!-- PATCH NOTES PANEL -->
+  <div class="sw-panel" id="sw-panel-patchnotes">
+    <div class="sw-card">
+      <div class="sw-section-label">Latest Updates</div>
+  
+      <div class="sw-card-title">UGWX-OS v1.0</div>
+      <div class="sw-card-desc">
+        • New settings UI redesign<br>
+        • Improved window snapping & fullscreen behavior<br>
+        • Faster startup animation<br>
+        • Bug fixes in dock restore system
+        • added patch notes and guide
+      </div>
+    </div>
+  
+    <div class="sw-card">
+      <div class="sw-section-label">Previous Versions</div>
+  
+      <div class="sw-card-title">v0.9</div>
+      <div class="sw-card-desc">
+        • Added live wallpapers<br>
+        • Fixed app minimization glitch
+      </div>
+    </div>
+  </div>
+  <!-- GUIDE PANEL -->
+  <div class="sw-panel" id="sw-panel-guide">
+    <div class="sw-card">
+      <div class="sw-section-label">Getting Started</div>
+  
+      <div class="sw-card-title">Basics</div>
+      <div class="sw-card-desc">
+        • Click apps in the dock to open them<br>
+        • Drag windows to move them<br>
+        • Use Red button to Close<br>
+        • Click the Green to maximize<br>
+      </div>
+    </div>
+    
+    <div class="sw-card">
+      <div class="sw-card-title">Store</div>
+      <div class="sw-card-desc">
+        • in the [🏪 store] page, you scroll through and download games<br>
+        • in the [📱 apps] page, you can download apps<br>
+        • in the [📦 owned] page, is all the apps/games you own you can open and delete them<br>
+      </div>
+    </div>
+  
+    <div class="sw-card">
+      <div class="sw-section-label">Tips</div>
+  
+      <div class="sw-card-title">Shortcuts</div>
+      <div class="sw-card-desc">
+        • ESC → exit fullscreen<br>
+        • you can download images and videos on here, go to files<br>
+        • Settings saves automatically
 
+      
+      </div>
+  
+    </div>
+  </div>
   <!-- main area -->
   <div class="sw-main">
     <div class="sw-topbar">
@@ -633,14 +710,21 @@
       <div class="sw-panel" id="sw-panel-wallpaper">
         <div class="sw-card">
           <div class="sw-section-label">Live Backgrounds</div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:4px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(50px,1fr));gap:8px;margin-bottom:4px;">
             <div class="wp-preset" style="background:linear-gradient(135deg,#ff2e55,#6d28d9,#ff2e55);" onclick="setLiveWp('plasma')" title="Plasma"></div>
             <div class="wp-preset" style="background:#000;border:1px solid #1a3a1a;display:flex;align-items:center;justify-content:center;font-size:18px;" onclick="setLiveWp('matrix')">🟩</div>
             <div class="wp-preset" style="background:linear-gradient(135deg,#0d0030,#003355,#300020);" onclick="setLiveWp('aurora')" title="Aurora"></div>
+            <div class="wp-preset" style="background:linear-gradient(135deg,#00c6ff,#0072ff);" onclick="setLiveWp('fluid')" title="Fluid"></div>
+            <div class="wp-preset" style="background:radial-gradient(circle,#001a33,#000);" onclick="setLiveWp('space')" title="Space"></div>
             <div class="wp-preset" style="background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text-mute);" onclick="setLiveWp('off')">✕</div>
           </div>
           <div style="display:flex;gap:6px;margin-top:10px;font-size:11px;color:var(--text-mute);justify-content:space-around;padding:0 4px;">
-            <span style="text-align:center;width:25%">Plasma</span><span style="text-align:center;width:25%">Matrix</span><span style="text-align:center;width:25%">Aurora</span><span style="text-align:center;width:25%">Off</span>
+            <span style="text-align:center;">Plasma</span>
+            <span style="text-align:center;">Matrix</span>
+            <span style="text-align:center;">Aurora</span>
+            <span style="text-align:center;">Fluid</span>
+            <span style="text-align:center;">Space</span>
+            <span style="text-align:center;">Off</span>
           </div>
         </div>
         <div class="sw-card">
@@ -813,7 +897,7 @@ function notify(title,msg,icon="🔔"){
   const n=document.createElement("div");n.className="notif";
   n.innerHTML=`<div class="notif-icon">${icon}</div><div><div class="notif-title">${title}</div><div class="notif-msg">${msg}</div></div>`;
   area.appendChild(n);
-  setTimeout(()=>{n.classList.add("out");n.addEventListener("animationend",()=>n.remove(),{once:true});},3800);
+  setTimeout(()=>{n.classList.add("out");n.addEventListener("animationend",()=>n.remove(),{once:true});},5800);
 }
 
 // ── CLOCK / BATTERY ──────────────────────────────────────────
@@ -928,7 +1012,6 @@ function mkWin({id,title,w=920,h=600,content,onopen}){
   win.innerHTML=`
     <div class="tb">
       <div class="tb-dot tb-close" onclick="closeWin(this.closest('.win'))"></div>
-      <div class="tb-dot tb-min" onclick="minWin(this.closest('.win'))"></div>
       <div class="tb-dot tb-max" onclick="toggleMax(this.closest('.win'))"></div>
       <div class="tbt">${title}</div>
     </div>
@@ -1037,13 +1120,8 @@ function restoreWin(id){
     w.style.transition = "all 0.45s cubic-bezier(.25,.8,.25,1)";
   });
 }
-document.addEventListener("click", () => {
-  document.querySelectorAll(".win.minimized").forEach(w=>{
-    restoreWin(w.dataset.id);
-  });
-});
 
-// ── WALLPAPER ────────────────────────────────────────────────
+// ── WALLPAPER ───────────────────────────────────<div class="tb-dot tb-min" onclick="minWin(this.closest('.win'))"></div>
 function loadWp(){
   const wp=localStorage.getItem("gnos_wp"),d=document.getElementById("desktop");
   if(wp){d.style.backgroundImage=`url(${wp})`;d.classList.add("wp");}
@@ -1166,23 +1244,20 @@ function closeSettings(){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const zonesURL="https://cdn.jsdelivr.net/gh/gn-math/assets@latest/zones.json";
-const coverBase="https://cdn.jsdelivr.net/gh/gn-math/covers@main";
-const htmlBase="https://cdn.jsdelivr.net/gh/gn-math/html@main";
+const zonesURL="https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json";
+const coverBase="https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
+const htmlBase="https://cdn.jsdelivr.net/gh/freebuisness/html@main";
 const PH="https://placehold.co/90x90/1a1a2e/ff2e55?text=App";
 
 const customApps=[
-  {id:1001,name:"Google Doc",   cover:"https://iili.io/qARpZPI.png",    url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@latest/doc.html",    type:"app"},
   {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
-  {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
-  {id:1005,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
-  {id:1006,name:"Wythos AI",cover:"https://github.com/JustJxrdanWasDefinetlyTaken/celestial/raw/main/public/assets/img/logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
-  {id:1007,name:"Dogeub (Browser)",cover:"https://iili.io/BgEMjDb.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
-  {id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
-  {id:1009,name:"Source Viewer",cover:"https://placehold.co/90x90/FFFFFF/000?text=Source%20Viewer", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/source.html", type:"app"},
+  {id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
+  {id:1005,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
+  //{id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
+  //{id:1009,name:"Source Viewer",cover:"https://placehold.co/90x90/FFFFFF/000?text=Source%20Viewer", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/source.html", type:"app"},
+  
 ];
-
 let zones=[];
 let installed=JSON.parse(localStorage.getItem("gnos_inst")||"[]");
 let custInst=JSON.parse(localStorage.getItem("gnos_cinst")||"[]").filter(id=>id!==1003&&id!==1004);
@@ -1192,7 +1267,7 @@ localStorage.setItem("gnos_cinst",JSON.stringify(custInst));
 
 let vc=parseInt(localStorage.getItem("gnos_vc")||"0")+1;
 localStorage.setItem("gnos_vc",vc);
-//document.getElementById("vc").textContent=`VISITS ON THIS ACCOUNT: ${vc}`;
+//document.getElementById("vc").textContent=`VISITS ON THIS ACCOUNT: ${vc}`;  {id:1003,name:"UGWorld Games 2.0",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/2.0logo.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/tutoring.html", type:"app"},
 
 // ── DOCK ──────────────────────────────────────────────────────
 function renderDock(){
@@ -1202,10 +1277,10 @@ function renderDock(){
     d.innerHTML=`<img src="${img}" onerror="this.src='${PH}'">${dot?'<div class="di-dot"></div>':""}${badge!==null?`<div class="di-badge">${badge}</div>`:""}`;
     d.onclick=fn;dock.appendChild(d);
   };
-  add("App Store","https://iili.io/qumwoEN.png",()=>openTab("store"));
-  // Chat always pre-installed
-  //add("GN Chat","https://iili.io/qumaSzF.png",()=>openChatApp(),true, unreadCount||null);
-  add("Settings","https://iili.io/qumPlb2.png",openSettings);
+  add("App Store","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShEyZFjeVplXmeytqBnKOyTcG51GKvUNmnDw&s",()=>openTab("store"));
+  add("UGWX Chat","https://support.apple.com/content/dam/edam/applecare/images/en_US/psp_heros/mini-hero-messages.png",()=>openChatApp(),true, unreadCount||null);
+  add("Settings","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5JaktX2gVWJ1Cj_6oWpGRSMHBoI0eqUl8yg&s",openSettings);
+  //add("html","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5JaktX2gVWJ1Cj_6oWpGRSMHBoI0eqUl8yg&s",openHTMLCreator);
   installed.forEach(id=>{const z=zones.find(z=>z.id==id);if(!z)return;add(z.name,z.cover.replace("{COVER_URL}",coverBase)||PH,()=>openZone(z),true);});
   custInst.forEach(id=>{const a=customApps.find(a=>a.id==id);if(!a)return;add(a.name,a.cover||PH,()=>openCustomApp(a),true);});
 }
@@ -1224,7 +1299,7 @@ function openTab(tab){
     requestAnimationFrame(()=>requestAnimationFrame(()=>l.classList.add("open")));
   }
   renderSidebar();
-  if(tab==="apps")renderCustomApps();else if(tab==="owned")renderOwned();else renderStore();
+  if(tab==="apps")renderCustomApps();else if(tab==="owned")renderOwned();else renderCustomApps();
 }
 function renderSidebar(){
   const sb=document.getElementById("sidebar");sb.innerHTML=`<input type="text" placeholder="🔍 search..." oninput="filterCards(this.value)"/>`;
@@ -1234,6 +1309,31 @@ function renderSidebar(){
   });
 }
 function filterCards(q){document.querySelectorAll(".ac").forEach(c=>c.style.display=c.dataset.name.includes(q.toLowerCase())?"flex":"none");}
+function renderStore(){
+  const g=document.getElementById("grid");
+  if(!zones.length){
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:5rem;color:var(--text-mute);"><div style="font-size:3rem;margin-bottom:16px;">🏪</div>Store loading…<br><small style="opacity:.5;margin-top:8px;display:block;">If this persists, download and open as a local .html file</small></div>';
+    return;
+  }
+  g.innerHTML="";
+  zones.forEach(z=>{
+    const inst=installed.includes(z.id);
+    const c=document.createElement("div");c.className="ac";c.dataset.name=z.name.toLowerCase();
+    const img=document.createElement("img");
+    img.src=z.cover.replace("{COVER_URL}",coverBase)||PH;
+    img.loading="lazy";img.onerror=()=>{img.src=PH;};
+    img.style.cssText="width:90px;height:90px;border-radius:22px;object-fit:cover;";
+    const nm=document.createElement("span");nm.textContent=z.name;
+    const btn=document.createElement("button");
+    btn.className="ibtn"+(inst?" inst":"");
+    btn.textContent=inst?"✓ installed":"install";
+    btn.onclick=e=>{e.stopPropagation();if(!inst)installZone(z.id,e);};
+    c.appendChild(img);c.appendChild(nm);c.appendChild(btn);
+    c.onclick=()=>inst?openZone(z):installZone(z.id,{stopPropagation:()=>{}});
+    c.style.animationDelay=(Array.from(g.children).length*40)+"ms";
+    g.appendChild(c);
+  });
+}
 function renderCustomApps(){
   const g=document.getElementById("grid");g.innerHTML="";
   customApps.forEach(a=>{
@@ -1370,32 +1470,23 @@ function openCustomApp(app){
     }
   });
 }
-function openZone(app){
-
-  mkWin({
-    id: app.id,
-    title: app.name,
-    w: 1100,
-    h: 680,
-    onopen: (_, wc) => {
-
-      wc.innerHTML = "";
-
-      // ALWAYS iframe for external URLs
-      const iframe = document.createElement("iframe");
-      iframe.src = app.url;
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      iframe.style.border = "none";
-      iframe.allowFullscreen = true;
-
-      wc.appendChild(iframe);
-    }
-  });
-
+function openZone(zone){
+  const isInt=!zone.url.startsWith("http");
+  let url=zone.url;
+  if(isInt)url=zone.url.replace("{HTML_URL}",htmlBase).replace("{COVER_URL}",coverBase)+"?t="+Date.now();
+  mkWin({id:zone.id,title:zone.name,w:1100,h:680,onopen:(_,wc)=>{
+    if(!isInt){const i=document.createElement("iframe");i.src=url;i.allowFullscreen=true;wc.appendChild(i);return;}
+    wc.innerHTML=`<div style="color:#fff;padding:3rem;text-align:center;">loading ${zone.name}…</div>`;
+    fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();}).then(raw=>{
+      let fx=raw.trim();
+      if(!fx.toLowerCase().includes("<!doctype"))fx=`<!DOCTYPE html><html><head><meta charset="UTF-8"><base href="${htmlBase}/"><style>body,html{margin:0;height:100%;overflow:hidden;background:#000;color:#fff}</style></head><body>${fx}</body></html>`;
+      const blob=new Blob([fx],{type:"text/html"}),burl=URL.createObjectURL(blob);
+      const i=document.createElement("iframe");i.src=burl;i.allowFullscreen=true;wc.innerHTML="";wc.appendChild(i);
+    }).catch(err=>{wc.innerHTML=`<div style="color:#f87171;padding:3rem;text-align:center;">load failed<br><small>${err.message}</small></div>`;});
+  }});
 }
 // ── CHAT APP ─────────────────────────────────────────────────
-const FIREBASE_URL="https://gnoschat-default-rtdb.firebaseio.com";
+const FIREBASE_URL="https://ugchat-facea-default-rtdb.firebaseio.com";
 const CHAT_KEY="gnos_chat_msgs";
 const ONLINE_KEY="gnos_online";
 let chatPollId=null;
@@ -1568,7 +1659,7 @@ async function sendMessage(input,msgsEl){
 
 function openChatApp(){
   unreadCount=0;renderDock();
-  const win=mkWin({id:"gnchat",title:"💬 GN Chat",w:480,h:600});
+  const win=mkWin({id:"gnchat",title:"💬 UGWX Chat",w:480,h:600});
   if(!win)return;
   const wc=document.getElementById("wc-gnchat");
   wc.style.height="calc(100% - 50px)";
@@ -1577,7 +1668,7 @@ function openChatApp(){
       <div class="chat-header">
         <div class="chat-avatar">💬</div>
         <div class="chat-header-info">
-          <div class="chat-header-name">GN Chat</div>
+          <div class="chat-header-name">UGWX Chat</div>
           <div class="chat-header-status">live · firebase · shared room</div>
         </div>
       </div>
@@ -1622,7 +1713,7 @@ async function initOS(){
   const cached=localStorage.getItem("gnos_zones_cache");
   if(cached){try{zones=JSON.parse(cached);}catch(e){}}
   renderDock();
-  notify("welcome back",`UGWX-OS loaded · ${account.username}`,"👾");
+  notify("welcome back",`UGWX-OS loaded · ${account.username}`,"👋");
 
   // then try fresh fetch and update cache
   try{
@@ -1656,7 +1747,7 @@ function createAccount(){
   localStorage.setItem("gnos_acct",JSON.stringify(account));
   showDesktop();
   initOS();
-  notify("account created",`welcome, ${u}! 🎉`,"✨");
+  notify("account created",`welcome, ${u}! Go check out settings to get started! 🎉`,"✨");
 }
 
 if(account){
@@ -2181,8 +2272,11 @@ function openCalculator(){
     btn.style.cssText=`${base}border:none;border-radius:16px;font-size:${style===3?22:style===2?20:18}px;
       font-weight:${style>=2?"600":"400"};cursor:pointer;font-family:'Inter',sans-serif;
       transition:transform .1s cubic-bezier(.34,1.56,.64,1),opacity .1s,filter .1s;
-      padding:0;aspect-ratio:1;display:flex;align-items:center;justify-content:center;`;
-    if(span===2)btn.style.aspectRatio="auto";
+      padding:0;min-height:60px;display:flex;align-items:center;justify-content:center;`;
+    if(spanVal===2){
+  btn.style.gridColumn="span 2";
+  btn.style.minHeight="60px";
+}
 
     btn.addEventListener("pointerdown",()=>{btn.style.transform="scale(.88)";btn.style.filter="brightness(1.3)";});
     btn.addEventListener("pointerup",()=>{btn.style.transform="";btn.style.filter="";});
@@ -2213,8 +2307,95 @@ function setLiveWp(type){
   if(type==="plasma")startPlasma(ctx,liveWpCanvas);
   if(type==="matrix")startMatrix(ctx,liveWpCanvas);
   if(type==="aurora")startAurora(ctx,liveWpCanvas);
+  if(type==="fluid")startFluid(ctx,liveWpCanvas);
+  if(type === "space") startSpace(ctx, liveWpCanvas);
 }
+function startFluid(ctx, cv){
 
+  const particles = [];
+  const MAX = 600;
+
+  let mouseX = 0;
+  let mouseY = 0;
+  let pmx = 0;
+  let pmy = 0;
+
+  // IMPORTANT: reset canvas state
+  ctx.setTransform(1,0,0,1,0,0);
+
+  function resize(){
+    cv.width = innerWidth;
+    cv.height = innerHeight;
+  }
+  resize();
+
+  const onMove = (e)=>{
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  };
+
+  window.addEventListener("mousemove", onMove);
+
+  function spawn(x,y,dx,dy){
+    for(let i=0;i<10;i++){
+      particles.push({
+        x,y,
+        vx: dx*0.4 + (Math.random()-0.5)*2,
+        vy: dy*0.4 + (Math.random()-0.5)*2,
+        life: 120,
+        hue: (x/cv.width)*360
+      });
+    }
+
+    if(particles.length > MAX){
+      particles.splice(0, particles.length - MAX);
+    }
+  }
+
+  const loop = ()=>{
+
+    // soft fade (fluid trails)
+    ctx.fillStyle = "rgba(0,0,0,0.07)";
+    ctx.fillRect(0,0,cv.width,cv.height);
+
+    const dx = mouseX - pmx;
+    const dy = mouseY - pmy;
+
+    if(mouseX && mouseY){
+      spawn(mouseX, mouseY, dx, dy);
+    }
+
+    pmx = mouseX;
+    pmy = mouseY;
+
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+
+      // fluid inertia
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      p.life--;
+
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,9,0,Math.PI*2);
+
+      ctx.fillStyle = `hsla(${p.hue},100%,60%,0.55)`;
+      ctx.fill();
+    }
+
+    for(let i=particles.length-1;i>=0;i--){
+      if(particles[i].life <= 0) particles.splice(i,1);
+    }
+
+    liveWpRaf = requestAnimationFrame(loop);
+  };
+
+  loop();
+}
 function startPlasma(ctx,cv){
   let t=0;
   const loop=()=>{
@@ -2233,11 +2414,101 @@ function startPlasma(ctx,cv){
       }}
     }}
     ctx.putImageData(id,0,0);
-    t+=0.018;
+    t+=0.1;
     liveWpRaf=requestAnimationFrame(loop);
   };loop();
 }
+function startSpace(ctx, cv){
 
+  let raf = null;
+
+  const stars = [];
+  const COUNT = 800;
+
+  function resize(){
+    cv.width = innerWidth;
+    cv.height = innerHeight;
+  }
+  resize();
+  addEventListener("resize", resize);
+
+  for(let i=0;i<COUNT;i++){
+    stars.push({
+      x: Math.random()*cv.width,
+      y: Math.random()*cv.height,
+      z: Math.random()*2 + 0.2,
+      vx: 0,
+      vy: 0
+    });
+  }
+
+  // 🌌 optional gentle mouse drift (NOT a black hole)
+  let mx = cv.width/2;
+  let my = cv.height/2;
+
+  window.onmousemove = e=>{
+    mx = e.clientX;
+    my = e.clientY;
+  };
+
+  function loop(){
+
+    // fade trails
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(0,0,cv.width,cv.height);
+
+    for(const s of stars){
+
+      const dx = mx - s.x;
+      const dy = my - s.y;
+
+      const dist = Math.sqrt(dx*dx + dy*dy) + 0.001;
+
+      // 🌌 VERY light influence (almost zero gravity)
+      const force = (8 / dist) * s.z;
+
+      s.vx += (dx / dist) * force * 0.01;
+      s.vy += (dy / dist) * force * 0.01;
+
+      // damping (smooth float)
+      s.vx *= 0.96;
+      s.vy *= 0.96;
+
+      // drift motion (space flow feel)
+      s.x += s.vx + (s.z * 0.25);
+      s.y += s.vy;
+
+      // wrap edges
+      if(s.x < 0) s.x = cv.width;
+      if(s.x > cv.width) s.x = 0;
+      if(s.y < 0) s.y = cv.height;
+      if(s.y > cv.height) s.y = 0;
+
+      // motion-based visuals
+      const speed = Math.hypot(s.vx,s.vy);
+      const size = s.z * 2 + speed * 0.2;
+
+      const hue = 210 + speed * 10;
+
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${hue},100%,70%,0.85)`;
+      ctx.arc(s.x,s.y,size,0,Math.PI*2);
+      ctx.fill();
+
+      // ✨ subtle trail
+      ctx.beginPath();
+      ctx.moveTo(s.x - s.vx, s.y - s.vy);
+      ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = `rgba(120,180,255,${Math.min(0.35,speed*0.04)})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    raf = requestAnimationFrame(loop);
+  }
+
+  loop();
+}
 function startMatrix(ctx,cv){
   const cols=Math.floor(cv.width/14);
   const drops=Array.from({length:cols},()=>Math.random()*cv.height/14|0);
