@@ -1247,8 +1247,9 @@ const customApps=[
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
   {id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
   {id:1005,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
-  {id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
-  {id:1009,name:"Source Viewer",cover:"https://placehold.co/90x90/FFFFFF/000?text=Source%20Viewer", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/source.html", type:"app"},
+  //{id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
+  //{id:1009,name:"Source Viewer",cover:"https://placehold.co/90x90/FFFFFF/000?text=Source%20Viewer", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/source.html", type:"app"},
+  
 ];
 
 let zones=[];
@@ -1270,10 +1271,10 @@ function renderDock(){
     d.innerHTML=`<img src="${img}" onerror="this.src='${PH}'">${dot?'<div class="di-dot"></div>':""}${badge!==null?`<div class="di-badge">${badge}</div>`:""}`;
     d.onclick=fn;dock.appendChild(d);
   };
-  add("App Store","https://iili.io/qumwoEN.png",()=>openTab("store"));
-  // Chat always pre-installed
-  //add("GN Chat","https://iili.io/qumaSzF.png",()=>openChatApp(),true, unreadCount||null);
-  add("Settings","https://iili.io/qumPlb2.png",openSettings);
+  add("App Store","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShEyZFjeVplXmeytqBnKOyTcG51GKvUNmnDw&s",()=>openTab("store"));
+  add("UGWX Chat","https://support.apple.com/content/dam/edam/applecare/images/en_US/psp_heros/mini-hero-messages.png",()=>openChatApp(),true, unreadCount||null);
+  add("Settings","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5JaktX2gVWJ1Cj_6oWpGRSMHBoI0eqUl8yg&s",openSettings);
+  //add("html","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5JaktX2gVWJ1Cj_6oWpGRSMHBoI0eqUl8yg&s",openHTMLCreator);
   installed.forEach(id=>{const z=zones.find(z=>z.id==id);if(!z)return;add(z.name,z.cover.replace("{COVER_URL}",coverBase)||PH,()=>openZone(z),true);});
   custInst.forEach(id=>{const a=customApps.find(a=>a.id==id);if(!a)return;add(a.name,a.cover||PH,()=>openCustomApp(a),true);});
 }
@@ -1479,7 +1480,7 @@ function openZone(zone){
   }});
 }
 // ── CHAT APP ─────────────────────────────────────────────────
-const FIREBASE_URL="https://gnoschat-default-rtdb.firebaseio.com";
+const FIREBASE_URL="https://ugchat-facea-default-rtdb.firebaseio.com";
 const CHAT_KEY="gnos_chat_msgs";
 const ONLINE_KEY="gnos_online";
 let chatPollId=null;
@@ -1652,7 +1653,7 @@ async function sendMessage(input,msgsEl){
 
 function openChatApp(){
   unreadCount=0;renderDock();
-  const win=mkWin({id:"gnchat",title:"💬 GN Chat",w:480,h:600});
+  const win=mkWin({id:"gnchat",title:"💬 UGWX Chat",w:480,h:600});
   if(!win)return;
   const wc=document.getElementById("wc-gnchat");
   wc.style.height="calc(100% - 50px)";
@@ -1661,7 +1662,7 @@ function openChatApp(){
       <div class="chat-header">
         <div class="chat-avatar">💬</div>
         <div class="chat-header-info">
-          <div class="chat-header-name">GN Chat</div>
+          <div class="chat-header-name">UGWX Chat</div>
           <div class="chat-header-status">live · firebase · shared room</div>
         </div>
       </div>
@@ -2265,8 +2266,11 @@ function openCalculator(){
     btn.style.cssText=`${base}border:none;border-radius:16px;font-size:${style===3?22:style===2?20:18}px;
       font-weight:${style>=2?"600":"400"};cursor:pointer;font-family:'Inter',sans-serif;
       transition:transform .1s cubic-bezier(.34,1.56,.64,1),opacity .1s,filter .1s;
-      padding:0;aspect-ratio:1;display:flex;align-items:center;justify-content:center;`;
-    if(span===2)btn.style.aspectRatio="auto";
+      padding:0;min-height:60px;display:flex;align-items:center;justify-content:center;`;
+    if(spanVal===2){
+  btn.style.gridColumn="span 2";
+  btn.style.minHeight="60px";
+}
 
     btn.addEventListener("pointerdown",()=>{btn.style.transform="scale(.88)";btn.style.filter="brightness(1.3)";});
     btn.addEventListener("pointerup",()=>{btn.style.transform="";btn.style.filter="";});
