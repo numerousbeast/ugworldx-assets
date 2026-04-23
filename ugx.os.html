@@ -518,7 +518,7 @@
     <div class="boot-logo" style="font-size:72px; font-weight:900; color:var(--primary);">UGWX-OS</div>
   </div>
 
-  <div class="boot-sub" style="font-size:24px; margin-top:20px;">version 0.7</div>
+  <div class="boot-sub" style="font-size:24px; margin-top:20px;">version 0.8</div>
   <div class="boot-sub" style="font-size:24px; margin-top:20px;">Ninth Configuration</div>
   <div class="boot-sub" style="font-size:24px; margin-top:20px;">Executing Order 67</div>
   <div class="boot-bar-wrap" style="margin-top:30px; width:300px; height:8px; background-color:var(--surface-h); border-radius:4px;">
@@ -2712,50 +2712,21 @@ function startAurora(ctx,cv){
 })();
 
 // ── FILE MANAGER ──────────────────────────────────────────────
-// ── FILE MANAGER ──────────────────────────────────────────────
 const FM_DB_NAME = "gnos_fs";
 const FM_STORE = "files";
 
 let fmFiles = [];
+
 let db;
-let fmFolders = [];
 
-function fmLoadFolders(){
-  return new Promise(resolve=>{
-    const tx = db.transaction("folders", "readonly");
-    const store = tx.objectStore("folders");
-    const req = store.getAll();
-
-    req.onsuccess = ()=>{
-      fmFolders = req.result || [];
-      resolve();
-    };
-  });
-}
-
-function fmSaveFolder(folder){
-  return new Promise(resolve=>{
-    const tx = db.transaction("folders", "readwrite");
-    const store = tx.objectStore("folders");
-    store.put(folder);
-    tx.oncomplete = resolve;
-  });
-}  
-
-// ── INIT DB ────────────────────────────────────────────────
 function fmInitDB(){
   return new Promise((resolve, reject)=>{
     const req = indexedDB.open(FM_DB_NAME, 1);
 
     req.onupgradeneeded = e=>{
       db = e.target.result;
-
-      if(!db.objectStoreNames.contains("files")){
-        db.createObjectStore("files", { keyPath: "id" });
-      }
-
-      if(!db.objectStoreNames.contains("folders")){
-        db.createObjectStore("folders", { keyPath: "id" });
+      if(!db.objectStoreNames.contains(FM_STORE)){
+        db.createObjectStore(FM_STORE, { keyPath: "id" });
       }
     };
 
@@ -2768,7 +2739,6 @@ function fmInitDB(){
   });
 }
 
-// ── LOAD FILES ─────────────────────────────────────────────
 function fmLoad(){
   return new Promise(resolve=>{
     const tx = db.transaction(FM_STORE, "readonly");
@@ -2782,7 +2752,6 @@ function fmLoad(){
   });
 }
 
-// ── SAVE FILE ──────────────────────────────────────────────
 function fmSaveFile(file){
   return new Promise(resolve=>{
     const tx = db.transaction(FM_STORE, "readwrite");
@@ -2792,7 +2761,6 @@ function fmSaveFile(file){
   });
 }
 
-// ── DELETE FILE ────────────────────────────────────────────
 function fmDeleteFile(id){
   return new Promise(resolve=>{
     const tx = db.transaction(FM_STORE, "readwrite");
@@ -2802,7 +2770,6 @@ function fmDeleteFile(id){
   });
 }
 
-// ── CLEAR ALL ──────────────────────────────────────────────
 function fmClearAll(){
   return new Promise(resolve=>{
     const tx = db.transaction(FM_STORE, "readwrite");
@@ -2812,236 +2779,19 @@ function fmClearAll(){
   });
 }
 
-// ── HELPERS ────────────────────────────────────────────────
 function fmIcon(type){
   if(type.startsWith("image/"))return"🖼";
   if(type.startsWith("video/"))return"🎬";
   if(type.startsWith("audio/"))return"🎵";
   if(type.includes("pdf"))return"📄";
+  if(type.includes("zip")||type.includes("tar")||type.includes("gz"))return"🗜";
+  if(type.includes("text")||type.includes("json")||type.includes("javascript"))return"📝";
   return"📁";
 }
-
 function fmSize(bytes){
   if(bytes<1024)return bytes+"B";
   if(bytes<1048576)return(bytes/1024).toFixed(1)+"KB";
   return(bytes/1048576).toFixed(1)+"MB";
-}
-
-// ── OPEN ───────────────────────────────────────────────────
-async function openFileManager(){
-  await fmInitDB();
-  await fmLoad();
-
-  const win = mkWin({id:"fileman",title:"📁 files",w:780,h:560});
-  if(!win) return;
-
-  renderFM(document.getElementById("wc-fileman"));
-}
-
-// ── RENDER UI ──────────────────────────────────────────────
-function renderFM(wc){
-  if(!wc) return;
-
-  wc.style.height="calc(100% - 50px)";
-  wc.style.overflow="hidden";
-  wc.innerHTML="";
-
-  const wrap=document.createElement("div");
-  wrap.className="fm-wrap";
-
-  // ── TOOLBAR ─────────────────────────────
-  const tb=document.createElement("div");
-  tb.className="fm-toolbar";
-
-  const h=document.createElement("h3");
-  h.textContent="📁 my files";
-  
-  const folderBtn = document.createElement("button");
-folderBtn.textContent = "+ folder";
-
-folderBtn.onclick = async ()=>{
-  const name = prompt("Folder name:");
-  if(!name) return;
-
-  const folder = {
-    id: Date.now() + Math.random(),
-    name
-  };
-
-  await fmSaveFolder(folder);
-  await fmLoadFolders();
-  renderFM(wc);
-};
-
-  const uploadBtn=document.createElement("button");
-  uploadBtn.textContent="+ upload files";
-
-  const fileInput=document.createElement("input");
-  fileInput.type="file";
-  fileInput.multiple=true;
-  fileInput.style.display="none";
-
-  uploadBtn.onclick=()=>fileInput.click();
-
-  fileInput.onchange=e=>{
-    [...e.target.files].forEach(readFile);
-  };
-
-  const clearBtn=document.createElement("button");
-  clearBtn.textContent="clear all";
-
-  clearBtn.onclick=async()=>{
-    if(confirm("delete all files?")){
-      await fmClearAll();
-      await fmLoad();
-      renderFM(wc);
-    }
-  };
-
-  tb.append(h,fileInput,uploadBtn,clearBtn);
-
-  // ── DROP AREA ───────────────────────────
-  const drop=document.createElement("div");
-  drop.className="fm-drop";
-
-  const hint=document.createElement("div");
-  hint.textContent="drag & drop files here or upload";
-  drop.appendChild(hint);
-
-  // ── READ FILE ───────────────────────────
-  function readFile(file){
-
-    const reader = new FileReader();
-
-    reader.onload = async (ev)=>{
-
-      const entry = {
-        id: Date.now() + Math.random(),
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        date: Date.now(),
-        data: ev.target.result
-      };
-
-      await fmSaveFile(entry);
-      await fmLoad();
-      renderFM(wc);
-
-      notify("file added", file.name, "📁");
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  // ── FILE LIST ───────────────────────────
-  fmFiles.forEach(f=>{
-
-    const row=document.createElement("div");
-    row.className="fm-file";
-
-    const icon=document.createElement("div");
-    icon.textContent=fmIcon(f.type);
-
-    const info=document.createElement("div");
-    info.innerHTML=`
-      <div>${f.name}</div>
-      <div>${fmSize(f.size)} · ${new Date(f.date).toLocaleString()}</div>
-    `;
-
-    const acts=document.createElement("div");
-
-    // ── VIEW (FAST STREAM FIX) ─────────────
-    if(f.type.startsWith("image/")||
-       f.type.startsWith("video/")||
-       f.type.startsWith("audio/")){
-
-      const btn=document.createElement("button");
-      btn.textContent="view";
-
-      btn.onclick=()=>{
-
-        const url = f.data; // already base64 OR blob-safe
-
-        const ov=document.createElement("div");
-        ov.style.position="fixed";
-        ov.style.inset="0";
-        ov.style.background="rgba(0,0,0,0.9)";
-        ov.style.display="flex";
-        ov.style.alignItems="center";
-        ov.style.justifyContent="center";
-
-        let el;
-
-        if(f.type.startsWith("image/")){
-          el=new Image();
-          el.src=url;
-        }
-
-        if(f.type.startsWith("video/")){
-          el=document.createElement("video");
-          el.src=url;
-          el.controls=true;
-          el.autoplay=true;
-        }
-
-        if(f.type.startsWith("audio/")){
-          el=document.createElement("audio");
-          el.src=url;
-          el.controls=true;
-          el.autoplay=true;
-        }
-
-        el.style.maxWidth="90vw";
-        el.style.maxHeight="90vh";
-
-        ov.appendChild(el);
-
-        ov.onclick=()=>ov.remove();
-
-        document.body.appendChild(ov);
-      };
-
-      acts.appendChild(btn);
-    }
-
-    // ── DOWNLOAD ───────────────────────────
-    const dl=document.createElement("button");
-    dl.textContent="↓";
-    dl.onclick=()=>{
-      const a=document.createElement("a");
-      a.href=f.data;
-      a.download=f.name;
-      a.click();
-    };
-    acts.appendChild(dl);
-
-    // ── DELETE FIX ──────────────────────────
-    const del=document.createElement("button");
-    del.textContent="🗑";
-
-    del.onclick=async()=>{
-      await fmDeleteFile(f.id);
-      await fmLoad();
-      renderFM(wc);
-    };
-
-    acts.appendChild(del);
-
-    row.append(icon,info,acts);
-    drop.appendChild(row);
-  });
-
-  // ── STORAGE BAR ─────────────────────────
-  const sb=document.createElement("div");
-
-  const total=fmFiles.reduce((a,f)=>a+f.size,0);
-
-  sb.textContent =
-    `${fmFiles.length} files · ${(total/1024/1024).toFixed(2)} MB used`;
-
-  wrap.append(tb,drop,sb);
-  wc.appendChild(wrap);
 }
 
 async function openFileManager(){
@@ -3075,7 +2825,7 @@ function renderFM(wc){
   // drop zone + file list
   const drop=document.createElement("div");drop.className="fm-drop";
 
-  const hint=document.createElement("div");hint.className="fm-drop-hint";hint.textContent="drag & drop files here, or click \"+ upload files\, allows images, videos, and music"";
+  const hint=document.createElement("div");hint.className="fm-drop-hint";hint.textContent="drag & drop files here, or click \"+ upload files\"";
   drop.appendChild(hint);
 
   drop.addEventListener("dragover",e=>{e.preventDefault();hint.classList.add("drag-over");});
