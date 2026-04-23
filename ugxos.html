@@ -2712,34 +2712,300 @@ function startAurora(ctx,cv){
 })();
 
 // ── FILE MANAGER ──────────────────────────────────────────────
-const FM_KEY="gnos_files_meta";
-let fmFiles=[];
+// ── FILE MANAGER ──────────────────────────────────────────────
+const FM_DB_NAME = "gnos_fs";
+const FM_STORE = "files";
 
-function fmLoad(){
-  try{const s=localStorage.getItem(FM_KEY);fmFiles=s?JSON.parse(s):[];}
-  catch(e){fmFiles=[];}
+let fmFiles = [];
+let db;
+
+// ── INIT DB ────────────────────────────────────────────────
+function fmInitDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(FM_DB_NAME, 1);
+
+    req.onupgradeneeded = e=>{
+      db = e.target.result;
+      if(!db.objectStoreNames.contains(FM_STORE)){
+        db.createObjectStore(FM_STORE, { keyPath: "id" });
+      }
+    };
+
+    req.onsuccess = e=>{
+      db = e.target.result;
+      resolve();
+    };
+
+    req.onerror = reject;
+  });
 }
-function fmSave(){localStorage.setItem(FM_KEY,JSON.stringify(fmFiles));}
 
+// ── LOAD FILES ─────────────────────────────────────────────
+function fmLoad(){
+  return new Promise(resolve=>{
+    const tx = db.transaction(FM_STORE, "readonly");
+    const store = tx.objectStore(FM_STORE);
+    const req = store.getAll();
+
+    req.onsuccess = ()=>{
+      fmFiles = req.result || [];
+      resolve();
+    };
+  });
+}
+
+// ── SAVE FILE ──────────────────────────────────────────────
+function fmSaveFile(file){
+  return new Promise(resolve=>{
+    const tx = db.transaction(FM_STORE, "readwrite");
+    const store = tx.objectStore(FM_STORE);
+    store.put(file);
+    tx.oncomplete = resolve;
+  });
+}
+
+// ── DELETE FILE ────────────────────────────────────────────
+function fmDeleteFile(id){
+  return new Promise(resolve=>{
+    const tx = db.transaction(FM_STORE, "readwrite");
+    const store = tx.objectStore(FM_STORE);
+    store.delete(id);
+    tx.oncomplete = resolve;
+  });
+}
+
+// ── CLEAR ALL ──────────────────────────────────────────────
+function fmClearAll(){
+  return new Promise(resolve=>{
+    const tx = db.transaction(FM_STORE, "readwrite");
+    const store = tx.objectStore(FM_STORE);
+    store.clear();
+    tx.oncomplete = resolve;
+  });
+}
+
+// ── HELPERS ────────────────────────────────────────────────
 function fmIcon(type){
   if(type.startsWith("image/"))return"🖼";
   if(type.startsWith("video/"))return"🎬";
   if(type.startsWith("audio/"))return"🎵";
   if(type.includes("pdf"))return"📄";
-  if(type.includes("zip")||type.includes("tar")||type.includes("gz"))return"🗜";
-  if(type.includes("text")||type.includes("json")||type.includes("javascript"))return"📝";
   return"📁";
 }
+
 function fmSize(bytes){
   if(bytes<1024)return bytes+"B";
   if(bytes<1048576)return(bytes/1024).toFixed(1)+"KB";
   return(bytes/1048576).toFixed(1)+"MB";
 }
 
-function openFileManager(){
-  fmLoad();
+// ── OPEN ───────────────────────────────────────────────────
+async function openFileManager(){
+  await fmInitDB();
+  await fmLoad();
+
+  const win = mkWin({id:"fileman",title:"📁 files",w:780,h:560});
+  if(!win) return;
+
+  renderFM(document.getElementById("wc-fileman"));
+}
+
+// ── RENDER UI ──────────────────────────────────────────────
+function renderFM(wc){
+  if(!wc) return;
+
+  wc.style.height="calc(100% - 50px)";
+  wc.style.overflow="hidden";
+  wc.innerHTML="";
+
+  const wrap=document.createElement("div");
+  wrap.className="fm-wrap";
+
+  // ── TOOLBAR ─────────────────────────────
+  const tb=document.createElement("div");
+  tb.className="fm-toolbar";
+
+  const h=document.createElement("h3");
+  h.textContent="📁 my files";
+
+  const uploadBtn=document.createElement("button");
+  uploadBtn.textContent="+ upload files";
+
+  const fileInput=document.createElement("input");
+  fileInput.type="file";
+  fileInput.multiple=true;
+  fileInput.style.display="none";
+
+  uploadBtn.onclick=()=>fileInput.click();
+
+  fileInput.onchange=e=>{
+    [...e.target.files].forEach(readFile);
+  };
+
+  const clearBtn=document.createElement("button");
+  clearBtn.textContent="clear all";
+
+  clearBtn.onclick=async()=>{
+    if(confirm("delete all files?")){
+      await fmClearAll();
+      await fmLoad();
+      renderFM(wc);
+    }
+  };
+
+  tb.append(h,fileInput,uploadBtn,clearBtn);
+
+  // ── DROP AREA ───────────────────────────
+  const drop=document.createElement("div");
+  drop.className="fm-drop";
+
+  const hint=document.createElement("div");
+  hint.textContent="drag & drop files here or upload";
+  drop.appendChild(hint);
+
+  // ── READ FILE ───────────────────────────
+  function readFile(file){
+
+    const reader = new FileReader();
+
+    reader.onload = async (ev)=>{
+
+      const entry = {
+        id: Date.now() + Math.random(),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        date: Date.now(),
+        data: ev.target.result
+      };
+
+      await fmSaveFile(entry);
+      await fmLoad();
+      renderFM(wc);
+
+      notify("file added", file.name, "📁");
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  // ── FILE LIST ───────────────────────────
+  fmFiles.forEach(f=>{
+
+    const row=document.createElement("div");
+    row.className="fm-file";
+
+    const icon=document.createElement("div");
+    icon.textContent=fmIcon(f.type);
+
+    const info=document.createElement("div");
+    info.innerHTML=`
+      <div>${f.name}</div>
+      <div>${fmSize(f.size)} · ${new Date(f.date).toLocaleString()}</div>
+    `;
+
+    const acts=document.createElement("div");
+
+    // ── VIEW (FAST STREAM FIX) ─────────────
+    if(f.type.startsWith("image/")||
+       f.type.startsWith("video/")||
+       f.type.startsWith("audio/")){
+
+      const btn=document.createElement("button");
+      btn.textContent="view";
+
+      btn.onclick=()=>{
+
+        const url = f.data; // already base64 OR blob-safe
+
+        const ov=document.createElement("div");
+        ov.style.position="fixed";
+        ov.style.inset="0";
+        ov.style.background="rgba(0,0,0,0.9)";
+        ov.style.display="flex";
+        ov.style.alignItems="center";
+        ov.style.justifyContent="center";
+
+        let el;
+
+        if(f.type.startsWith("image/")){
+          el=new Image();
+          el.src=url;
+        }
+
+        if(f.type.startsWith("video/")){
+          el=document.createElement("video");
+          el.src=url;
+          el.controls=true;
+          el.autoplay=true;
+        }
+
+        if(f.type.startsWith("audio/")){
+          el=document.createElement("audio");
+          el.src=url;
+          el.controls=true;
+          el.autoplay=true;
+        }
+
+        el.style.maxWidth="90vw";
+        el.style.maxHeight="90vh";
+
+        ov.appendChild(el);
+
+        ov.onclick=()=>ov.remove();
+
+        document.body.appendChild(ov);
+      };
+
+      acts.appendChild(btn);
+    }
+
+    // ── DOWNLOAD ───────────────────────────
+    const dl=document.createElement("button");
+    dl.textContent="↓";
+    dl.onclick=()=>{
+      const a=document.createElement("a");
+      a.href=f.data;
+      a.download=f.name;
+      a.click();
+    };
+    acts.appendChild(dl);
+
+    // ── DELETE FIX ──────────────────────────
+    const del=document.createElement("button");
+    del.textContent="🗑";
+
+    del.onclick=async()=>{
+      await fmDeleteFile(f.id);
+      await fmLoad();
+      renderFM(wc);
+    };
+
+    acts.appendChild(del);
+
+    row.append(icon,info,acts);
+    drop.appendChild(row);
+  });
+
+  // ── STORAGE BAR ─────────────────────────
+  const sb=document.createElement("div");
+
+  const total=fmFiles.reduce((a,f)=>a+f.size,0);
+
+  sb.textContent =
+    `${fmFiles.length} files · ${(total/1024/1024).toFixed(2)} MB used`;
+
+  wrap.append(tb,drop,sb);
+  wc.appendChild(wrap);
+}
+
+async function openFileManager(){
+  await fmInitDB();
+  await fmLoad();
+
   const win=mkWin({id:"fileman",title:"📁 files",w:780,h:560});
   if(!win)return;
+
   renderFM(document.getElementById("wc-fileman"));
 }
 
@@ -2775,61 +3041,139 @@ function renderFM(wc){
   });
 
   function readFile(file){
-    if(file.size>10*1024*1024){notify("file too large","max 10MB per file","⚠️");return;}
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const entry={id:Date.now()+Math.random(),name:file.name,type:file.type,size:file.size,date:Date.now(),data:ev.target.result};
-      fmFiles.unshift(entry);
-      fmSave();
-      renderFM(wc);
-      notify("file added",file.name,"📁");
-    };
-    reader.readAsDataURL(file);
-  }
+
+  const entry = {
+    id: Date.now() + Math.random(),
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    date: Date.now(),
+    data: file // 👈 STORE RAW FILE (not blob URL)
+  };
+
+  fmSaveFile(entry).then(()=>{
+    fmLoad().then(()=>renderFM(wc));
+    notify("file added", file.name, "📁");
+  });
+}
 
   if(fmFiles.length){
-    fmFiles.forEach(f=>{
-      const row=document.createElement("div");row.className="fm-file";
-      const icon=document.createElement("div");icon.className="fm-file-icon";icon.textContent=fmIcon(f.type);
-      const info=document.createElement("div");info.className="fm-file-info";
-      const name=document.createElement("div");name.className="fm-file-name";name.textContent=f.name;
-      const meta=document.createElement("div");meta.className="fm-file-meta";
-      meta.textContent=`${fmSize(f.size)} · ${new Date(f.date).toLocaleDateString()}`;
-      info.appendChild(name);info.appendChild(meta);
+  fmFiles.forEach(f=>{
+    const row=document.createElement("div");
+    row.className="fm-file";
 
-      const acts=document.createElement("div");acts.className="fm-file-actions";
+    const icon=document.createElement("div");
+    icon.className="fm-file-icon";
+    icon.textContent=fmIcon(f.type);
 
-      // view/preview
-      if(f.type.startsWith("image/")||f.type.startsWith("video/")){
-        const vb=document.createElement("button");vb.className="fm-btn fm-btn-view";vb.textContent="view";
-        vb.onclick=()=>{
-          const ov=document.createElement("div");ov.className="fm-preview-overlay";
-          const el=f.type.startsWith("image/")?document.createElement("img"):document.createElement("video");
-          el.src=f.data;if(f.type.startsWith("video/")){el.controls=true;}
-          const xb=document.createElement("button");xb.className="fm-preview-close";xb.textContent="×";
-          xb.onclick=()=>ov.remove();
-          ov.appendChild(el);ov.appendChild(xb);
-          document.body.appendChild(ov);
-          ov.onclick=e=>{if(e.target===ov)ov.remove();};
+    const info=document.createElement("div");
+    info.className="fm-file-info";
+
+    const name=document.createElement("div");
+    name.className="fm-file-name";
+    name.textContent=f.name;
+
+    const meta=document.createElement("div");
+    meta.className="fm-file-meta";
+    meta.textContent=`${fmSize(f.size)} · ${new Date(f.date).toLocaleDateString()}`;
+
+    info.appendChild(name);
+    info.appendChild(meta);
+
+    const acts=document.createElement("div");
+    acts.className="fm-file-actions";
+
+    // ── VIEWER (FIXED) ─────────────────────────────
+    if(
+      f.type.startsWith("image/") ||
+      f.type.startsWith("video/") ||
+      f.type.startsWith("audio/")
+    ){
+      const vb=document.createElement("button");
+      vb.className="fm-btn fm-btn-view";
+      vb.textContent="view";
+    
+      vb.onclick=()=>{
+    
+        const ov=document.createElement("div");
+        ov.className="fm-preview-overlay";
+    
+        const url = URL.createObjectURL(f.data);
+    
+        let el;
+    
+        if(f.type.startsWith("image/")){
+          el=document.createElement("img");
+          el.src=url;
+        }
+    
+        else if(f.type.startsWith("video/")){
+          el=document.createElement("video");
+          el.src=url;
+          el.controls=true;
+          el.autoplay=true;
+        }
+    
+        else if(f.type.startsWith("audio/")){
+          el=document.createElement("audio");
+          el.src=url;
+          el.controls=true;
+          el.autoplay=true;
+        }
+    
+        el.style.maxWidth="90vw";
+        el.style.maxHeight="85vh";
+        el.style.borderRadius="12px";
+    
+        const xb=document.createElement("button");
+        xb.className="fm-preview-close";
+        xb.textContent="×";
+        xb.onclick=()=>{
+          URL.revokeObjectURL(url);
+          ov.remove();
         };
-        acts.appendChild(vb);
-      }
+    
+        ov.appendChild(el);
+        ov.appendChild(xb);
+    
+        document.body.appendChild(ov);
+    
+        ov.onclick=e=>{
+          if(e.target===ov){
+            URL.revokeObjectURL(url);
+            ov.remove();
+          }
+        };
+      };
+    
+      acts.appendChild(vb);
+    }
 
-      // download
-      const dl=document.createElement("button");dl.className="fm-btn fm-btn-dl";dl.textContent="↓";
-      dl.title="download";
-      dl.onclick=()=>{const a=document.createElement("a");a.href=f.data;a.download=f.name;a.click();};
-      acts.appendChild(dl);
+    // ── DOWNLOAD ─────────────────────────────
+    const dl=document.createElement("button");
+    dl.className="fm-btn fm-btn-dl";
+    dl.textContent="↓";
+    dl.title="download";
+    dl.onclick=()=>{
+      const a=document.createElement("a");
+      a.href=f.data;
+      a.download=f.name;
+      a.click();
+    };
+    acts.appendChild(dl);
 
-      // delete
-      const db=document.createElement("button");db.className="fm-btn fm-btn-del";db.textContent="🗑";
-      db.onclick=()=>{fmFiles=fmFiles.filter(x=>x.id!==f.id);fmSave();renderFM(wc);};
-      acts.appendChild(db);
+    // ── DELETE ─────────────────────────────
+    const db=document.createElement("button");
+    db.className="fm-btn fm-btn-del";
+    db.textContent="🗑";
+    acts.appendChild(db);
 
-      row.appendChild(icon);row.appendChild(info);row.appendChild(acts);
-      drop.appendChild(row);
-    });
-  }
+    row.appendChild(icon);
+    row.appendChild(info);
+    row.appendChild(acts);
+    drop.appendChild(row);
+  });
+}
 
   // statusbar
   const sb=document.createElement("div");sb.className="fm-stats";
