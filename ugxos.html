@@ -2718,6 +2718,29 @@ const FM_STORE = "files";
 
 let fmFiles = [];
 let db;
+let fmFolders = [];
+
+function fmLoadFolders(){
+  return new Promise(resolve=>{
+    const tx = db.transaction("folders", "readonly");
+    const store = tx.objectStore("folders");
+    const req = store.getAll();
+
+    req.onsuccess = ()=>{
+      fmFolders = req.result || [];
+      resolve();
+    };
+  });
+}
+
+function fmSaveFolder(folder){
+  return new Promise(resolve=>{
+    const tx = db.transaction("folders", "readwrite");
+    const store = tx.objectStore("folders");
+    store.put(folder);
+    tx.oncomplete = resolve;
+  });
+}  
 
 // ── INIT DB ────────────────────────────────────────────────
 function fmInitDB(){
@@ -2726,8 +2749,13 @@ function fmInitDB(){
 
     req.onupgradeneeded = e=>{
       db = e.target.result;
-      if(!db.objectStoreNames.contains(FM_STORE)){
-        db.createObjectStore(FM_STORE, { keyPath: "id" });
+
+      if(!db.objectStoreNames.contains("files")){
+        db.createObjectStore("files", { keyPath: "id" });
+      }
+
+      if(!db.objectStoreNames.contains("folders")){
+        db.createObjectStore("folders", { keyPath: "id" });
       }
     };
 
@@ -2827,6 +2855,23 @@ function renderFM(wc){
 
   const h=document.createElement("h3");
   h.textContent="📁 my files";
+  
+  const folderBtn = document.createElement("button");
+folderBtn.textContent = "+ folder";
+
+folderBtn.onclick = async ()=>{
+  const name = prompt("Folder name:");
+  if(!name) return;
+
+  const folder = {
+    id: Date.now() + Math.random(),
+    name
+  };
+
+  await fmSaveFolder(folder);
+  await fmLoadFolders();
+  renderFM(wc);
+};
 
   const uploadBtn=document.createElement("button");
   uploadBtn.textContent="+ upload files";
@@ -3030,7 +3075,7 @@ function renderFM(wc){
   // drop zone + file list
   const drop=document.createElement("div");drop.className="fm-drop";
 
-  const hint=document.createElement("div");hint.className="fm-drop-hint";hint.textContent="drag & drop files here, or click \"+ upload files\"";
+  const hint=document.createElement("div");hint.className="fm-drop-hint";hint.textContent="drag & drop files here, or click \"+ upload files\, allows images, videos, and music"";
   drop.appendChild(hint);
 
   drop.addEventListener("dragover",e=>{e.preventDefault();hint.classList.add("drag-over");});
