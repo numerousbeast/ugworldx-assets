@@ -18,7 +18,100 @@
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
-
+    .vc-app{
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      background:linear-gradient(180deg,#0a0f1a,#05070d);
+      color:#fff;
+      font-family:system-ui;
+    }
+    
+    .vc-header{
+      display:flex;
+      justify-content:space-between;
+      padding:10px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    
+    .vc-title{font-weight:600;}
+    .vc-room-info{font-size:12px;opacity:.7;}
+    
+    .vc-setup{
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    
+    .vc-actions{display:flex;gap:10px;}
+    
+    .vc-stage{
+      flex:1;
+      position:relative;
+      display:none;
+    }
+    
+    .vc-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:10px;
+      padding:10px;
+      height:100%;
+    }
+    
+    .vc-grid video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:12px;
+      background:#000;
+      animation:fadeIn .3s ease;
+    }
+    
+    @keyframes fadeIn{
+      from{opacity:0;transform:scale(.9);}
+      to{opacity:1;transform:scale(1);}
+    }
+    
+    .vc-local{
+      position:absolute;
+      bottom:70px;
+      right:10px;
+      width:120px;
+      height:90px;
+      border-radius:10px;
+      border:2px solid #00ff9c;
+    }
+    
+    .vc-controls{
+      position:absolute;
+      bottom:10px;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:12px;
+    }
+    
+    .vc-controls button{
+      width:44px;height:44px;
+      border-radius:50%;
+      border:none;
+      background:#1a2333;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      transition:.2s;
+    }
+    
+    .vc-controls button:hover{
+      transform:scale(1.1);
+      background:#24324a;
+    }
+    
+    .vc-controls .danger{
+      background:#ff3b3b;
+    }
     /* BOOT */
     #boot{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;}
     #boot.out{animation:bootOut 0.9s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none;}
@@ -1256,7 +1349,7 @@ const PH="https://placehold.co/90x90/1a1a2e/ff2e55?text=App";
 const customApps=[
   {id:1002,name:"UGWorld Games",cover:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/UGWorld%20Games%20(1).png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/ugworld1.html", type:"app"},
   {id:1004,name:"UGMovies v0.5 (Experimental)",cover:"https://iili.io/B7PN5gI.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/movie1.html", type:"app"},
-  {id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
+  //{id:1006,name:"HTML Editer",cover:"https://iili.io/BNxkLvt.th.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/editer.html", type:"app"},
   {id:1005,name:"Wythos AI",cover:"https://iili.io/BrCl1hG.md.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/wythos.html", type:"app"},
   //{id:1024,name:"GUST (Broswer)",cover:"https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/safari-icon.png", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/browser.html", type:"app"},
   //{id:1008,name:"HTML Loader",cover:"https://placehold.co/90x90/FFFFFF/000?text=TV", url:"https://cdn.jsdelivr.net/gh/numerousbeast/ugworldx-assets@main/cdn.html", type:"app"},
@@ -1284,6 +1377,8 @@ function renderDock(){
   };
   add("App Store","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShEyZFjeVplXmeytqBnKOyTcG51GKvUNmnDw&s",()=>openTab("store"));
   add("UGWX Chat","https://support.apple.com/content/dam/edam/applecare/images/en_US/psp_heros/mini-hero-messages.png",()=>openChatApp(),true, unreadCount||null);
+  add("UGWX video","https://iili.io/B6z4T2n.png",()=>openVideoCallApp(),true, unreadCount||null);
+  
   add("Settings","https://cdn.iconscout.com/icon/free/png-256/free-apple-settings-icon-svg-download-png-493162.png",openSettings);
   //add("html","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5JaktX2gVWJ1Cj_6oWpGRSMHBoI0eqUl8yg&s",openHTMLCreator);
   installed.forEach(id=>{const z=zones.find(z=>z.id==id);if(!z)return;add(z.name,z.cover.replace("{COVER_URL}",coverBase)||PH,()=>openZone(z),true);});
@@ -1709,6 +1804,346 @@ function openChatApp(){
     renderMessages(msgs,msgsEl,account.username);
   })();
 }
+//video----------------------------------------------------------------------------------------------
+// ── VIDEO CALL GLOBALS ─────────────────────────
+let vcRoomId=null;
+let vcLocalStream=null;
+let vcPeers={}; // username -> RTCPeerConnection
+let vcStarted=false;
+let vcIntervals=[];
+
+
+function openVideoCallApp(){
+  const win=mkWin({id:"vc",title:"📹 Video Call",w:520,h:640});
+  if(!win)return;
+
+  const wc=document.getElementById("wc-vc");
+
+  wc.innerHTML=`
+  <div class="vc-app">
+    <div class="vc-header">
+      <div class="vc-title">📹 Video Call</div>
+      <div class="vc-room-info">
+        Room: <span id="vc-room-label">—</span>
+        <span id="vc-count">0/10</span>
+      </div>
+    </div>
+  
+    <div class="vc-setup" id="vc-setup">
+      <input id="vc-room" placeholder="Enter or create room"/>
+      <div class="vc-actions">
+        <button id="vc-create">Create</button>
+        <button id="vc-join">Join</button>
+      </div>
+    </div>
+  
+    <div class="vc-stage" id="vc-stage">
+      <div class="vc-grid" id="vc-grid"></div>
+  
+      <video id="vc-local" autoplay muted class="vc-local"></video>
+  
+      <div class="vc-controls">
+        <button id="vc-mic">🎤</button>
+        <button id="vc-cam">📷</button>
+        <button id="vc-leave" class="danger">⏹</button>
+      </div>
+    </div>
+  </div>
+  `;
+  
+  setTimeout(()=>{
+    const createBtn=document.querySelector("#wc-vc #vc-create");
+    const joinBtn=document.querySelector("#wc-vc #vc-join");
+  
+    if(createBtn) createBtn.onclick=createRoom;
+    if(joinBtn) joinBtn.onclick=joinRoom;
+  },0);
+}
+function genRoomCode(){
+  return Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+async function joinRoom(){
+  if(!account || !account.username){
+    alert("You must be logged in");
+    return;
+  }
+
+  const code=document.getElementById("vc-room").value.trim();
+  if(!code)return alert("Enter room code");
+
+  const room=await fbGet(`rooms/${code}`);
+  if(!room)return alert("Room not found");
+
+  startVideoCall(code); // ✅ FIXED
+}
+
+async function createRoom(){
+  if(!account || !account.username){
+    alert("You must be logged in");
+    return;
+  }
+
+  const code=genRoomCode();
+  document.getElementById("vc-room").value=code;
+
+  await fbSet(`rooms/${code}`,{
+    created:Date.now()
+  });
+
+  startVideoCall(code); // ✅ FIXED
+}
+function setupControls(){
+  const micBtn=document.getElementById("vc-mic");
+  const camBtn=document.getElementById("vc-cam");
+  const leaveBtn=document.getElementById("vc-leave");
+
+  let micOn=true,camOn=true;
+
+  micBtn.onclick=()=>{
+    if(!vcLocalStream) return;
+
+    const track=vcLocalStream.getAudioTracks()[0];
+    if(!track) return;
+
+    micOn=!micOn;
+    track.enabled=micOn;
+
+    micBtn.style.background=micOn?"#1a2333":"#ff3b3b";
+  };
+
+  camBtn.onclick=()=>{
+    if(!vcLocalStream) return;
+
+    const track=vcLocalStream.getVideoTracks()[0];
+    if(!track) return;
+
+    camOn=!camOn;
+    track.enabled=camOn;
+
+    camBtn.style.background=camOn?"#1a2333":"#ff3b3b";
+  };
+
+  leaveBtn.onclick=leaveCall;
+}
+async function startVideoCall(roomId){
+  if(vcStarted)return;
+
+  if(!account || !account.username){
+    alert("You must be logged in");
+    return;
+  }
+
+  try{
+    vcRoomId=roomId;
+
+    document.getElementById("vc-room-label").textContent=roomId;
+    document.getElementById("vc-setup").style.display="none";
+    document.getElementById("vc-stage").style.display="block";
+
+    vcLocalStream=await navigator.mediaDevices.getUserMedia({
+      video:true,
+      audio:true
+    });
+
+    vcStarted=true;
+
+    document.getElementById("vc-local").srcObject=vcLocalStream;
+
+    setupControls();
+
+    await joinRoomPresence(roomId);
+
+    listenUsers(roomId);
+    listenSignals(roomId);
+    updateUserCount();
+
+  }catch(err){
+    console.error("Camera error:",err);
+    alert("Camera/mic blocked or not available");
+  }
+}
+async function joinRoomPresence(roomId){
+  const users=await fbGet(`rooms/${roomId}/users`)||{};
+
+  if(Object.keys(users).length>=10){
+    alert("Room full (max 10)");
+    return;
+  }
+
+  await fbSet(`rooms/${roomId}/users/${account.username}`,true);
+}
+function listenUsers(roomId){
+  setInterval(async()=>{
+    const users=await fbGet(`rooms/${roomId}/users`)||{};
+    
+    for(const user in users){
+      if(user===account.username)continue;
+
+      if(!vcPeers[user]){
+        createOffer(user);
+      }
+    }
+  },2000);
+}
+function createPeer(user){
+  if(!vcLocalStream) return;
+
+  const pc=new RTCPeerConnection({
+    iceServers:[{urls:"stun:stun.l.google.com:19302"}]
+  });
+
+  vcLocalStream.getTracks().forEach(track=>{
+    pc.addTrack(track,vcLocalStream);
+  });
+
+  pc.ontrack=e=>{
+    addRemoteVideo(user,e.streams[0]);
+  };
+
+  pc.onicecandidate=e=>{
+    if(e.candidate){
+      fbPush(`rooms/${vcRoomId}/signals`,{
+        to:user,
+        from:account.username,
+        type:"ice",
+        data:e.candidate
+      });
+    }
+  };
+
+  vcPeers[user]=pc;
+  return pc;
+}
+async function createOffer(user){
+  const pc=createPeer(user);
+
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  await fbPush(`rooms/${vcRoomId}/signals`,{
+    to:user,
+    from:account.username,
+    type:"offer",
+    data:offer
+  });
+}  
+function listenSignals(roomId){
+  setInterval(async()=>{
+    const data=await fbGet(`rooms/${roomId}/signals`)||{};
+
+    for(const [key,sig] of Object.entries(data)){
+      if(sig.to!==account.username)continue;
+
+      await handleSignal(sig);
+      await fbDelete(`rooms/${roomId}/signals/${key}`);
+    }
+  },1000);
+}
+async function handleSignal(sig){
+  let pc=vcPeers[sig.from]||createPeer(sig.from);
+
+  if(sig.type==="offer"){
+    await pc.setRemoteDescription(new RTCSessionDescription(sig.data));
+
+    const answer=await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    await fbPush(`rooms/${vcRoomId}/signals`,{
+      to:sig.from,
+      from:account.username,
+      type:"answer",
+      data:answer
+    });
+  }
+
+  else if(sig.type==="answer"){
+    await pc.setRemoteDescription(new RTCSessionDescription(sig.data));
+  }
+
+  else if(sig.type==="ice"){
+    try{
+      await pc.addIceCandidate(new RTCIceCandidate(sig.data));
+    }catch(e){}
+  }
+}
+function addRemoteVideo(user,stream){
+  let vid=document.getElementById("vc-"+user);
+
+  if(!vid){
+    vid=document.createElement("video");
+    vid.id="vc-"+user;
+    vid.autoplay=true;
+    vid.playsInline=true;
+
+    vid.style.opacity="0";
+
+    document.getElementById("vc-grid").appendChild(vid);
+
+    setTimeout(()=>vid.style.opacity="1",50);
+  }
+
+  vid.srcObject=stream;
+}
+async function leaveCall(){
+  // close peers
+  for(const u in vcPeers){
+    try{ vcPeers[u].close(); }catch(e){}
+  }
+  vcPeers={};
+
+  // stop camera
+  if(vcLocalStream){
+    vcLocalStream.getTracks().forEach(t=>t.stop());
+  }
+
+  vcLocalStream=null;
+
+  // clear UI
+  const grid=document.getElementById("vc-grid");
+  if(grid) grid.innerHTML="";
+
+  const local=document.getElementById("vc-local");
+  if(local) local.srcObject=null;
+
+  // remove from firebase
+  if(vcRoomId && account?.username){
+    await fbDelete(`rooms/${vcRoomId}/users/${account.username}`);
+  }
+
+  // reset UI
+  document.getElementById("vc-stage").style.display="none";
+  document.getElementById("vc-setup").style.display="flex";
+
+  vcStarted=false;
+  vcRoomId=null;
+}
+function updateUserCount(){
+  setInterval(async()=>{
+    const users=await fbGet(`rooms/${vcRoomId}/users`)||{};
+    document.getElementById("vc-count").textContent=
+      Object.keys(users).length+"/10";
+  },2000);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ── INIT ──────────────────────────────────────────────────────
 async function initOS(){
